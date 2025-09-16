@@ -1,0 +1,320 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MimeKit;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+namespace SMTPRouter.Models
+{
+    /// <summary>
+    /// A class representing a <see cref="MimeKit.MimeMessage"/> to be routed
+    /// </summary>
+    /// <remarks>This object encapsulates the message, sender and recipients</remarks>
+    public sealed partial class RoutableMessage: CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+    {
+        // Constants for the SmtpRouter Header Tag
+        internal const string SMTPROUTER_HEADER = "SmtpRouter-Header";
+        internal const string SMTPROUTER_HEADER_BEGIN = "SmtpRouter-Header-Begin";
+        internal const string SMTPROUTER_HEADER_VERSION = "SmtpRouter-Header-Version";
+        internal const string SMTPROUTER_HEADER_FROM = "SmtpRouter-Header-From";
+        internal const string SMTPROUTER_HEADER_TO = "SmtpRouter-Header-To";
+        internal const string SMTPROUTER_HEADER_END = "SmtpRouter-Header-End";
+        internal const string SMTPROUTER_HEADER_CREATIONTIME = "SmtpRouter-Header-CreationTime";
+        internal const string SMTPROUTER_HEADER_IPADDRESS = "SmtpRouter-Header-IPAddress";
+        internal const string SMTPROUTER_HEADER_FORCEROUTING = "SmtpRouter-Header-ForceRouting";
+        internal const string SMTPROUTER_VERSION = "2.0.0.0";
+
+        /// <summary>
+        /// The default format to use when serializing and/or deserializing messages from streams
+        /// </summary>
+        public const string SMTPROUTER_HEADER_CREATIONTIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+
+        /// <summary>
+        /// The Message Unique Identifier
+        /// </summary>
+        [ObservableProperty]
+        private string? _ID;
+
+        /// <summary>
+        /// The DateTime stamp when the message was first created
+        /// </summary>
+        [ObservableProperty]
+        private DateTime _creationDateTime;
+
+        /// <summary>
+        /// The <see cref="MimeMessage"/> to be routed
+        /// </summary>
+        [ObservableProperty]
+        private MimeMessage? _Message;
+
+        /// <summary>
+        /// A flag to define whether the message will be routed even though the acceptance/rejection rules do not allow that
+        /// </summary>
+        [ObservableProperty]
+        private bool _ForceRouting;
+
+        /// <summary>
+        /// The Smtp Key to be used to send the email
+        /// </summary>
+        [ObservableProperty]
+        private string? _SmtpConfigurationKey;
+
+        /// <summary>
+        /// The IP Address sending the message
+        /// </summary>
+        [ObservableProperty]
+        private string? _IPAddress;
+
+        /// <summary>
+        /// The user sending the message
+        /// </summary>
+        [ObservableProperty]
+        private MailboxAddress? _MailFrom;
+
+        /// <summary>
+        /// List of recipients of the message
+        /// </summary>
+        [ObservableProperty]
+        private List<MailboxAddress>? _Recipients;
+
+        /// <summary>
+        /// The Message File Name (containing the full path)
+        /// </summary>
+        [ObservableProperty]
+        private string? _FileName;
+
+        /// <summary>
+        /// Initializes a new instance of a Routing Message
+        /// </summary>
+        public RoutableMessage(): this(null, null, new List<MailboxAddress>(), "") { }
+
+        /// <summary>
+        /// Initializes a new instance of a Routing Message
+        /// </summary>
+        /// <param name="message">The <see cref="MimeMessage"/> to be sent</param>
+        /// <param name="mailFrom">A <see cref="MailboxAddress"/> containing the sender address</param>
+        /// <param name="recipients">A <see cref="List{T}"/> of <see cref="MailboxAddress"/> containing all the recipients of the message</param>
+        /// <param name="fileName">The full path of the message file</param>
+        public RoutableMessage(MimeMessage? message, MailboxAddress? mailFrom, List<MailboxAddress> recipients, string fileName): this(message, mailFrom, recipients, fileName, "") { }
+
+        /// <summary>
+        /// Initializes a new instance of a Routing Message
+        /// </summary>
+        /// <param name="message">The <see cref="MimeMessage"/> to be sent</param>
+        /// <param name="mailFrom">A <see cref="MailboxAddress"/> containing the sender address</param>
+        /// <param name="recipients">A <see cref="List{T}"/> of <see cref="MailboxAddress"/> containing all the recipients of the message</param>
+        /// <param name="ipAddress">A <see cref="string"/> containing the IP Address who originated the message</param>
+        /// <param name="fileName">The full path of the message file</param>
+        public RoutableMessage(MimeMessage? message, MailboxAddress? mailFrom, List<MailboxAddress> recipients, string fileName, string ipAddress)
+        {
+            _Message = message;
+            _MailFrom = mailFrom;
+            _Recipients = recipients;
+            _FileName = fileName;
+            _IPAddress = ipAddress;
+        }
+
+        /// <summary>
+        /// Saves the Routable Message to a file
+        /// </summary>
+        /// <remarks>It will use the file name from the property <see cref="FileName"/></remarks>
+        public void SaveToFile()
+        {
+            SaveToFile(this.FileName);
+        }
+
+        /// <summary>
+        /// Saves the Routable Message to a file
+        /// </summary>
+        /// <param name="fileName">The file where the message is being saved</param>
+        public void SaveToFile(string? fileName)
+        {
+            try
+            {
+                // Minimum parameters needed
+                if (string.IsNullOrEmpty(fileName)) throw new ArgumentNullException(nameof(fileName));
+                if (Message is null) throw new ArgumentNullException(nameof(Message));
+
+                // Ensure all variables are informed
+                if (CreationDateTime == DateTime.MinValue)
+                    CreationDateTime = DateTime.Now;
+
+                // Defines the format of the file
+                var dosLineFormat = new FormatOptions()
+                {
+                    NewLineFormat = NewLineFormat.Dos,                    
+                };
+
+                // Prepare File Output
+                using (var fileStream = File.Create(fileName))
+                {
+                    // Creates a stream for the header
+                    using (var streamHeader = new MemoryStream())
+                    {
+                        using (var streamHeaderWriter = new StreamWriter(streamHeader, Encoding.GetEncoding(28592)))
+                        {
+                            // Ensure to not Automatically Flush
+                            streamHeaderWriter.AutoFlush = false;
+
+                            // Writes the SmtpRouter Header
+                            streamHeaderWriter.WriteLine(SMTPROUTER_HEADER_BEGIN);
+                            streamHeaderWriter.WriteLine($"{SMTPROUTER_HEADER_VERSION}: {SMTPROUTER_VERSION}");
+                            streamHeaderWriter.WriteLine($"{SMTPROUTER_HEADER_CREATIONTIME}: {CreationDateTime.ToString(SMTPROUTER_HEADER_CREATIONTIME_FORMAT)}");
+                            streamHeaderWriter.WriteLine($"{SMTPROUTER_HEADER_FROM}: {MailFrom?.Address}");
+                            streamHeaderWriter.WriteLine($"{SMTPROUTER_HEADER_IPADDRESS}: {IPAddress}");
+
+                            if (Recipients is not null)
+                            {
+                                foreach (var mailTo in Recipients)
+                                    streamHeaderWriter.WriteLine($"{SMTPROUTER_HEADER_TO}: {mailTo.Address}");
+                            }
+
+                            streamHeaderWriter.WriteLine(SMTPROUTER_HEADER_END);
+
+                            // Flushes to the file
+                            streamHeaderWriter.Flush();
+
+                            // Copy Header to file
+                            streamHeader.Seek(0, SeekOrigin.Begin);
+                            streamHeader.CopyTo(fileStream);
+                        }
+                    }
+
+                    // Creates a stream for the Message
+                    using (var streamMessage = new MemoryStream())
+                    {
+                        Message.WriteTo(dosLineFormat, streamMessage);
+
+                        streamMessage.Seek(0, SeekOrigin.Begin);
+                        streamMessage.CopyTo(fileStream);
+                    }
+
+                    // Flush it to the file
+                    fileStream.Flush();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new MessageNotQueuedException(this, e);
+            }
+
+        }
+
+        /// <summary>
+        /// Loads the Routable Message based on a file
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static RoutableMessage LoadFromFile(string fileName)
+        {
+            // The Routable Message
+            var routableMessage = new RoutableMessage()
+            {
+                FileName = fileName
+            };
+
+            try
+            {
+                // Creates a Stream with the remaining values
+                using var messageStream = new MemoryStream();
+
+                // Read File
+                using (var fileStream = File.OpenRead(fileName))
+                {
+                    // Text File Line
+                    string line = "";
+
+                    // Reader for the Text File
+                    using StreamReader fileStreamReader = new StreamReader(fileStream, Encoding.GetEncoding(28592));
+                    
+                    // Writer for the Message Stream
+                    using StreamWriter messageStreamWriter = new StreamWriter(messageStream, Encoding.GetEncoding(28592));
+                    // Flag to define whether the system is reading the header or not anymore
+                    bool inHeader = true;
+
+                    // Ensure the stream will have data
+                    messageStreamWriter.AutoFlush = true;
+
+                    while ((!fileStreamReader.EndOfStream) && (inHeader))
+                    {
+                        line = fileStreamReader.ReadLine();
+
+                        if (line.StartsWith(SMTPROUTER_HEADER))
+                        {
+                            if ((!line.StartsWith(SMTPROUTER_HEADER_BEGIN)) && (!line.StartsWith(SMTPROUTER_HEADER_END)))
+                            {
+                                // Array with the contents
+                                string[] tempHeader = line.Split(':');
+                                if (tempHeader.Length == 1)
+                                    throw new Exception($"Invalid Header: {line}");
+
+                                // Remove any special character from the string
+                                tempHeader[1] = SMTPRouter.Utils.RemoveSpecialCharacters(tempHeader[1]);
+
+                                // Check which type of header line is being processed
+                                if ((line.StartsWith(SMTPROUTER_HEADER_FROM)) || (line.StartsWith(SMTPROUTER_HEADER_TO)))
+                                {
+                                    // Try to parse the address, if valid then add it to the list
+                                    if (MailboxAddress.TryParse(tempHeader[1], out MailboxAddress _newMailboxAddress))
+                                    {
+                                        if (line.StartsWith(SMTPROUTER_HEADER_FROM))
+                                            routableMessage.MailFrom = _newMailboxAddress;
+                                        else if (line.StartsWith(SMTPROUTER_HEADER_TO))
+                                        {
+                                            routableMessage.Recipients ??= new List<MailboxAddress>();
+                                            routableMessage.Recipients.Add(_newMailboxAddress);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        throw new Exception($"Unable to parse '{tempHeader[1]}' to a valid email address");
+                                    }
+                                }
+                                else if (line.StartsWith(SMTPROUTER_HEADER_CREATIONTIME))
+                                {
+                                    // Load the creation time
+                                    if (DateTime.TryParseExact(tempHeader[1], SMTPROUTER_HEADER_CREATIONTIME_FORMAT, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out DateTime dateTime))
+                                        routableMessage.CreationDateTime = dateTime;
+                                    else
+                                        routableMessage.CreationDateTime = DateTime.Now;
+                                }
+                                else if (line.StartsWith(SMTPROUTER_HEADER_IPADDRESS))
+                                {
+                                    // Load the Sender IP Address
+                                    routableMessage.IPAddress = tempHeader[1];
+                                }
+                                else if (line.StartsWith(SMTPROUTER_HEADER_FORCEROUTING))
+                                {
+                                    // Sets the Force Routing Flag
+                                    routableMessage.ForceRouting = true;
+                                }
+                            }
+                            else if (line.StartsWith(SMTPROUTER_HEADER_END))
+                            {
+                                // No longer in header
+                                inHeader = false;
+                            }
+                        }
+                    }
+
+                    // Add remaining lines
+                    messageStreamWriter.Write(fileStreamReader.ReadToEnd());
+
+                    // Load Message
+                    messageStream.Position = 0;
+                    routableMessage.Message = MimeMessage.Load(messageStream);
+                }
+
+                // Returns the Routable Message
+                return routableMessage;
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+        }
+
+    }
+
+}

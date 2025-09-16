@@ -1,0 +1,153 @@
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace SMTPRouter.Models
+{
+    /// <summary>
+    /// Represents an SMTP Connection Configuration
+    /// </summary>
+    public sealed partial class SmtpConfiguration : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+    {
+        /// <summary>
+        /// The path for the Smtp Key working folders
+        /// </summary>
+        public WorkingFolders Folders { get; private set; } = new WorkingFolders();
+
+        /// <summary>
+        /// Sets the working directory of the folders
+        /// </summary>
+        /// <param name="rootDirectory">The root directory for the Folders</param>
+        public void SetWorkingDirectory(string rootDirectory)
+        {
+            // Create Folders structure
+            if (!String.IsNullOrEmpty(Key))
+                Folders = new WorkingFolders(System.IO.Path.Combine(rootDirectory, Key), GroupingOption);
+            else
+                Folders = new WorkingFolders(System.IO.Path.Combine(rootDirectory, "UndefinedSmtp"), GroupingOption);
+        }
+
+        /// <summary>
+        /// A unique name to identify the SMTP Configuration
+        /// </summary>
+        [ObservableProperty]
+        private string? _key;
+
+        /// <summary>
+        /// A Description for the SMTP Configuration
+        /// </summary>
+        [ObservableProperty]
+        private string? _description;
+
+        /// <summary>
+        /// The SMTP Host
+        /// </summary>
+        [ObservableProperty]
+        private string? _host;
+
+
+        /// <summary>
+        /// The Port Number
+        /// </summary>
+        [ObservableProperty]
+        private int _port;
+
+        /// <summary>
+        /// A flag to define whether the SMTP Connection requires Authentication
+        /// </summary>
+        [ObservableProperty]
+        private bool _requiresAuthentication;
+
+        /// <summary>
+        /// Defines whether SSL is necessary to perform the connection.
+        /// </summary>
+        /// <remarks>Make sure you define the proper port on the <see cref="Port"/> Property. SSL usually uses port 465.</remarks>
+        [ObservableProperty]
+        private bool _useSSL;
+
+        /// <summary>
+        /// The User Name to connect to the SMTP
+        /// </summary>
+        [ObservableProperty]
+        private string? _user;
+
+        /// <summary>
+        /// The Password to connect to the SMTP
+        /// </summary>
+        [ObservableProperty]
+        private string? _password;
+
+        /// <summary>
+        /// The number of active connections for the SMTP
+        /// </summary>
+        /// <remarks>
+        /// The Default value is Zero. That means each time this SMTP Connection is to be used, the system will create a connection, send the message and disconnect.
+        /// When you have more than one active connection, the system will use the next available connection to send the message. If there are too many messages to be sent, messages will be on hold until a SMTP Connection is avalable.
+        /// Try to limit your active connections to 10 (ten).
+        /// </remarks>
+        [ObservableProperty]
+        private int _activeConnections;
+
+        /// <summary>
+        /// The number of the Queue. This is used by the Router to help find the queue on the array.
+        /// </summary>
+        [ObservableProperty]
+        private int _queueNumber;
+
+        /// <summary>
+        /// Represents the Secure Socket Options
+        /// </summary>
+        /// <remarks>
+        /// Use the following values:
+        /// <list type="bullet">
+        ///     <item>None = 0 (No SSL or TLS encryption should be used)</item>
+        ///     <item>Auto = 1 (The system will decide whether to use SSL or TLS)</item>
+        ///     <item>SslOnConnect = 2 (The connection should use SSL or TLS encryption immediately)</item>
+        ///     <item>StartTls = 3 (Elevates the connection to use TLS encryption immediately after reading the greeting and server capabilities)</item>
+        ///     <item>StartTlsWhenAvailable = 4 (Elevates the connection to use TLS encryption immediately after reading the greeting and server capabilities, but only if the server supports that)</item>
+        /// </list>
+        /// </remarks>
+        [ObservableProperty]
+        private int _secureSocketOption;
+
+        /// <summary>
+        /// The <see cref="FileGroupingOptions"/> to define how to group the messages in the Sent folder
+        /// </summary>
+        [ObservableProperty]
+        private FileGroupingOptions _groupingOption;
+
+        /// <summary>
+        /// Initializes a new instance of the SMTP Configuration
+        /// </summary>
+        public SmtpConfiguration()
+        {
+            Port = 25;
+            UseSSL = false;
+            RequiresAuthentication = false;
+            SecureSocketOption = 0;
+            GroupingOption = 0;
+            QueueNumber = 0;
+        }
+
+    }
+
+    /// <summary>
+    /// Grouping options for the files on the Sent folder
+    /// </summary>
+    public enum FileGroupingOptions: int
+    {
+        /// <summary>
+        /// All files will be saved on the root folder
+        /// </summary>
+        NoGrouping = 0,
+        /// <summary>
+        /// All files will be saved on a folder per day
+        /// </summary>
+        GroupByDate = 1,
+        /// <summary>
+        /// All files will be saved on a folder per day and hour
+        /// </summary>
+        GroupByDateAndHour = 2
+    }
+}
