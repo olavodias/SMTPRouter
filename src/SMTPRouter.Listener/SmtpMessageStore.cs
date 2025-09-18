@@ -26,7 +26,6 @@ namespace SMTPRouter.Listener
         /// </summary>
         public event EventHandler<MessageErrorEventArgs>? MessageReceivedWithErrors;
 
-
         /// <summary>
         /// The Path where the listener will store messages
         /// </summary>

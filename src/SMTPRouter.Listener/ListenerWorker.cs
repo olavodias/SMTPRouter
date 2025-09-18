@@ -34,7 +34,7 @@ namespace SMTPRouter.Listener
         /// <inheritdoc/>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Worker Executing Async: {time}", DateTimeOffset.Now);
+            _logger.LogInformation("ListenerWorker ExecuteAsync Start: {time}", DateTimeOffset.Now);
 
             try
             {
@@ -44,25 +44,26 @@ namespace SMTPRouter.Listener
                 if (hosting is null)
                     throw new InvalidOperationException("The configuration file is not valid");
 
-                // Initialize SMTP Server
+                // Create and Run SMTP Server
                 var smtpServer = CreateSmtpServer(hosting);
+                await smtpServer.StartAsync(stoppingToken);
 
-                //TODO: CONTINUE FROM HERE
-
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    if (_logger.IsEnabled(LogLevel.Information))
-                    {
-                        
-                    }
-                    await Task.Delay(1000, stoppingToken);
-                }
+                //TODO: Also start the Purge Task
 
             }
-            catch (Exception)
+            catch (OperationCanceledException)
             {
-
-                throw;
+                _logger.LogInformation("ListenerWorker ExecuteAsync Operation Cancelled: {time}", DateTimeOffset.Now);
+                await Task.CompletedTask;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "An error occurred during the execution of the ListenerWorker");
+                await Task.FromException(e);
+            }
+            finally
+            {
+                _logger.LogInformation("ListenerWorker ExecuteAsync Finish: {time}", DateTimeOffset.Now);
             }
         }
 
@@ -96,7 +97,8 @@ namespace SMTPRouter.Listener
             {
                 optionsBuilder.Endpoint(b => b.Port(pi.Value.Number, pi.Value.IsSecure)
                                               .AllowUnsecureAuthentication(pi.Value.IsSecure)
-                                              .AuthenticationRequired(hosting.RequiresAuthentication));            }
+                                              .AuthenticationRequired(hosting.RequiresAuthentication));
+            }
 
             // Setup Providers
             var serviceProvider = new ServiceProvider();
@@ -119,12 +121,12 @@ namespace SMTPRouter.Listener
 
         private void SmtpMessageStore_MessageReceived(object? sender, MessageEventArgs e)
         {
-
+            _logger.LogInformation("Message Received Sucessfully from {sender}", e.SmtpMessage.MailFrom);
         }
 
         private void SmtpMessageStore_MessageReceivedWithErrors(object? sender, MessageErrorEventArgs e)
         {
-
+            _logger.LogError(e.Exception, "Message Received with Errors from {sender}", e.SmtpMessage.MailFrom);
         }
 
         private void Server_OnSessionCreated(object? sender, SessionEventArgs e)
