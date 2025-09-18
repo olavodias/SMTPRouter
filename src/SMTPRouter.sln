@@ -5,12 +5,17 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
 	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
 		..\LICENSE = ..\LICENSE
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTPRouter", "SMTPRouter\SMTPRouter.csproj", "{65ACF3FE-9AD2-45DC-A3D8-0FC3D8C9BDEB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTPRouter.Abstractions", "SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj", "{02BAF8E8-B119-47B0-921C-AF6631B36F97}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTPRouter.Service", "SMTPRouter.Service\SMTPRouter.Service.csproj", "{F77EAFA4-4639-47DB-84F5-7C60C62F7157}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTPRouter.Listener", "SMTPRouter.Listener\SMTPRouter.Listener.csproj", "{518374D6-5E1D-4642-8755-F643FF3024A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SMTPRouter.Router", "SMTPRouter.Router\SMTPRouter.Router.csproj", "{957A3400-DE11-43EC-B8D4-70BC81CA82F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +23,21 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{65ACF3FE-9AD2-45DC-A3D8-0FC3D8C9BDEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65ACF3FE-9AD2-45DC-A3D8-0FC3D8C9BDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65ACF3FE-9AD2-45DC-A3D8-0FC3D8C9BDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65ACF3FE-9AD2-45DC-A3D8-0FC3D8C9BDEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02BAF8E8-B119-47B0-921C-AF6631B36F97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02BAF8E8-B119-47B0-921C-AF6631B36F97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02BAF8E8-B119-47B0-921C-AF6631B36F97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02BAF8E8-B119-47B0-921C-AF6631B36F97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F77EAFA4-4639-47DB-84F5-7C60C62F7157}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F77EAFA4-4639-47DB-84F5-7C60C62F7157}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F77EAFA4-4639-47DB-84F5-7C60C62F7157}.Release|Any CPU.Build.0 = Release|Any CPU
+		{518374D6-5E1D-4642-8755-F643FF3024A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{518374D6-5E1D-4642-8755-F643FF3024A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{518374D6-5E1D-4642-8755-F643FF3024A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{518374D6-5E1D-4642-8755-F643FF3024A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{957A3400-DE11-43EC-B8D4-70BC81CA82F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{957A3400-DE11-43EC-B8D4-70BC81CA82F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{957A3400-DE11-43EC-B8D4-70BC81CA82F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{957A3400-DE11-43EC-B8D4-70BC81CA82F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

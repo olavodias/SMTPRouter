@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <LangVersion>10.0</LangVersion>
+	  <Nullable>enable</Nullable>
+
+	  <!-- Nuget Package Info -->
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <PackageId>SMTPRouter.Abstractions</PackageId>
+	  <Version>0.1.0</Version>
+	  <Title>SMTP Router Service Abstractions</Title>
+	  <Authors>Olavo Henrique Dias</Authors>
+	  <Company>Olavo Henrique Dias</Company>
+	  <Product>SMTPRouter.Abstractions</Product>
+	  <Description>Abstractions for extending the SMTP Router Service Component</Description>
+	  <Summary>Abstractions for extending the SMTP Router Service Component</Summary>
+	  <Copyright>Copyright © Olavo Henrique Dias 2025</Copyright>
+	  <NeutralLanguage>en-US</NeutralLanguage>
+	  <PackageTags>SMTP Router Abstractions</PackageTags>
+	  <PackageReadmeFile>README.MD</PackageReadmeFile>
+	  <PackageIcon>packageIcon.png</PackageIcon>
+	  <PackageLicenseFile>LICENSE</PackageLicenseFile>
+	  <PublishRepositoryUrl>true</PublishRepositoryUrl>
+	  <RootNamespace>SMTPRouter</RootNamespace>
+	  <AssemblyName>SMTPRouter.Abstractions</AssemblyName>
+	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+  </PropertyGroup>
+
+	<!-- Add Special Files to the Output Folder, for the Nuget Package Creation -->
+	<ItemGroup>
+		<None Include="packageIcon.png" Pack="True" PackagePath="\" />
+		<None Include="../../LICENSE" Pack="true" PackagePath="\" />
+		<None Include="../../README.MD" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	
+</Project>

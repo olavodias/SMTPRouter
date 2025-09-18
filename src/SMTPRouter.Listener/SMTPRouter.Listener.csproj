@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<UserSecretsId>dotnet-SMTPRouter.Listener-28caccd7-2eb5-484e-902b-aeaab6f6393b</UserSecretsId>
+
+		<!-- Package Info -->
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<PackageId>SMTPRouter.Listener</PackageId>
+		<Version>0.1.0</Version>
+		<Title>SMTP Router Listener Service</Title>
+		<Authors>Olavo Henrique Dias</Authors>
+		<Company>Olavo Henrique Dias</Company>
+		<Product>SMTPRouter.Listener</Product>
+		<Description>Listens to SMTP Messages</Description>
+		<Summary>Listens to SMTP Messages</Summary>
+		<Copyright>Copyright © Olavo Henrique Dias 2025</Copyright>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageTags>SMTP Router Listener</PackageTags>
+		<PackageReadmeFile>README.MD</PackageReadmeFile>
+		<PackageIcon>packageIcon.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<RootNamespace>SMTPRouter</RootNamespace>
+		<AssemblyName>SMTPRouter.Listener</AssemblyName>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.13.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="SmtpServer" Version="11.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
+	</ItemGroup>
+</Project>

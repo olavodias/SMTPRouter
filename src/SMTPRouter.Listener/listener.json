@@ -1,0 +1,21 @@
+{
+  "Hosting": {
+    "Server": "localhost",
+    "Path": "C:\\SMTPRouter_v3.0.0",
+    "MessageLifespan": "00:15",
+    "MessagePurgeLifespan": 45,
+    "RequireAuthentication": false,
+    "PortsConfiguration": {
+      "Default": {
+        "Number": 25,
+        "IsSecure": false
+      },
+      "Secure": {
+        "Number": 587,
+        "IsSecure": true
+      }
+    },
+    "AcceptedIPAddresses": [],
+    "RejectedIPAddresses": []
+  }
+}
