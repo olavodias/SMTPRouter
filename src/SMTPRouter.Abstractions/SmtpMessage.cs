@@ -20,6 +20,8 @@ public sealed class SmtpMessage
     internal const string SMTPROUTER_HEADER_END = "SmtpRouter-Header-End";
     internal const string SMTPROUTER_HEADER_CREATIONTIME = "SmtpRouter-Header-CreationTime";
     internal const string SMTPROUTER_HEADER_ORIGIN_IP_ADDRESS = "SmtpRouter-Header-OriginIPAddress";
+    internal const string SMTPROUTER_HEADER_RECEIVEDBY_IP_ADDRESS = "SmtpRouter-Header-ReceivedByIPAddress";
+    internal const string SMTPROUTER_HEADER_RECEIVEDBY_HOSTNAME = "SmtpRouter-Header-ReceivedByHostname";
     internal const string SMTPROUTER_HEADER_FORCEROUTING = "SmtpRouter-Header-ForceRouting";
     internal const string SMTPROUTER_VERSION = "3.0.0.0";
 
@@ -101,18 +103,19 @@ public sealed class SmtpMessage
 
             // Define Output File Name
             var i = 1;
-            string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:3}.eml");
+            string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:00000}.eml");
             while (File.Exists(fileName))
             {
                 i++;
-                fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:3}.eml");
+                fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:00000}.eml");
             }
 
             // Create Output File
             using (var fileStream = File.Create(fileName))
             {
                 using var stream = new MemoryStream();
-                using var streamWriter = new StreamWriter(stream, Encoding.GetEncoding(28592));
+                //using var streamWriter = new StreamWriter(stream, Encoding.GetEncoding(28592));
+                using var streamWriter = new StreamWriter(stream, Encoding.UTF8);
 
                 streamWriter.AutoFlush = false;
 
@@ -121,6 +124,8 @@ public sealed class SmtpMessage
                 streamWriter.WriteLine($"{SMTPROUTER_HEADER_CREATIONTIME}: {CreationDateTime.ToString(SMTPROUTER_HEADER_CREATIONTIME_FORMAT)}");
                 streamWriter.WriteLine($"{SMTPROUTER_HEADER_FROM}: {MailFrom}");
                 streamWriter.WriteLine($"{SMTPROUTER_HEADER_ORIGIN_IP_ADDRESS}: {OriginIPAddress}");
+                streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_IP_ADDRESS}: {ReceivedByIPAddress}");
+                streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_HOSTNAME}: {ReceivedByHostName}");
 
                 if (Recipients is not null)
                 {

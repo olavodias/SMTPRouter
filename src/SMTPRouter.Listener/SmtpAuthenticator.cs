@@ -1,4 +1,7 @@
-﻿using SmtpServer;
+﻿#pragma warning disable CA1822 // Mark members as static
+#pragma warning disable IDE0060 // Remove unused parameter
+
+using SmtpServer;
 using SmtpServer.Authentication;
 using System;
 using System.Collections.Generic;
@@ -19,7 +22,6 @@ namespace SMTPRouter.Listener
         }
         public Task<bool> AuthenticateAsync(string user, string password)
         {
-            //TODO: Setup some sort of authentication
             // Right now, all users are allowed to relay emails. We limit that with the IP addresses.
             return Task.FromResult<bool>(true);
         }
@@ -30,3 +32,6 @@ namespace SMTPRouter.Listener
         }
     }
 }
+
+#pragma warning restore IDE0060 // Remove unused parameter
+#pragma warning restore CA1822 // Mark members as static

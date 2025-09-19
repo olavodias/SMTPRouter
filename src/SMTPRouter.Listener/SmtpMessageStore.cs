@@ -1,4 +1,6 @@
-﻿using SmtpServer;
+﻿using Microsoft.Extensions.Logging;
+using SmtpServer;
+using SmtpServer.Net;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;
 using System;
@@ -76,7 +78,8 @@ namespace SMTPRouter.Listener
                 smtpMessage.Contents = await new StreamReader(stream).ReadToEndAsync(cancellationToken);
 
                 // Receiving Information
-                smtpMessage.OriginIPAddress = context.EndpointDefinition.Endpoint.Address.ToString();
+                var endpoint = (IPEndPoint)context.Properties[EndpointListener.RemoteEndPointKey];
+                smtpMessage.OriginIPAddress = endpoint.Address.ToString();
                 smtpMessage.ReceivedByIPAddress = GetLocalIP();
                 smtpMessage.ReceivedByHostName = System.Net.Dns.GetHostName();
 

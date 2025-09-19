@@ -17,20 +17,15 @@ namespace SMTPRouter
         /// <summary>
         /// Initializes a new instance of the Message Error Event Arguments
         /// </summary>
-        public MessageErrorEventArgs(): this(null) { }
-
-        /// <summary>
-        /// Initializes a new instance of the Message Error Event Arguments
-        /// </summary>
         /// <param name="smtpMessage">The <see cref="SmtpMessage"/> received by the Smtp</param>
-        public MessageErrorEventArgs(SmtpMessage? smtpMessage): this(smtpMessage, null) { }
+        public MessageErrorEventArgs(SmtpMessage smtpMessage): this(smtpMessage, null) { }
 
         /// <summary>
         /// Initializes a new instance of the Message Error Event Arguments
         /// </summary>
         /// <param name="smtpMessage">The <see cref="SmtpMessage"/> received by the Smtp</param>
         /// <param name="exception">The exception that caused the error</param>
-        public MessageErrorEventArgs(SmtpMessage? smtpMessage, Exception? exception): base(smtpMessage)
+        public MessageErrorEventArgs(SmtpMessage smtpMessage, Exception? exception): base(smtpMessage)
         {
             SmtpMessage = smtpMessage;
             Exception = exception;

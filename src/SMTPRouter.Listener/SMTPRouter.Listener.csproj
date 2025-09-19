@@ -5,11 +5,12 @@
 		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<UserSecretsId>dotnet-SMTPRouter.Listener-28caccd7-2eb5-484e-902b-aeaab6f6393b</UserSecretsId>
-
+		<PublishSingleFile>true</PublishSingleFile>
+		
 		<!-- Package Info -->
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<PackageId>SMTPRouter.Listener</PackageId>
-		<Version>0.1.0</Version>
+		<Version>3.0.0-preview.1</Version>
 		<Title>SMTP Router Listener Service</Title>
 		<Authors>Olavo Henrique Dias</Authors>
 		<Company>Olavo Henrique Dias</Company>
@@ -31,7 +32,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="MailKit" Version="4.13.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.9" />
 		<PackageReference Include="SmtpServer" Version="11.0.0" />
 	</ItemGroup>
 
