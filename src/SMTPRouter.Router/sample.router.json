@@ -1,0 +1,33 @@
+{
+  "Path": "C:\\SmtpRouter\\",
+  "Connections": {
+    "Smtp01": {
+      "Description": "Autoliv SMTP Server",
+      "Host": "smtp.alv.autoliv.int",
+      "Port": 25,
+      "RequiresAuthentication": false,
+      "SecureSocketOption": "0",
+      "ActiveConnections": 4,
+      "GroupingOption": 2
+    },
+    "Smtp02": {
+      "Description": "Veoneer SMTP Server",
+      "Host": "smtp.corp.int",
+      "Port": 25,
+      "RequiresAuthentication": false,
+      "SecureSocketOption": "0",
+      "ActiveConnections": 1,
+      "GroupingOption": 2
+    }
+  },
+
+  "Rules": {
+    "Rule01": {
+      "Type": "SMTPRouter.RoutingRule.MailFromDomainRoutingRule, SMTPRouter.Abstractions",
+      "Parameters": {
+        "Domain": "example.com"
+      },
+      "ConnectionKey": "Smtp01"
+    }
+  }
+}

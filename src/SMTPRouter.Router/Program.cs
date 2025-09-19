@@ -1,5 +1,9 @@
+using SMTPRouter;
+using SMTPRouter.ConfigurationSchema;
 using SMTPRouter.Router;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
 
 // Get Assembly Information for Service / EventLog Registration
 var currentAssembly = Assembly.GetExecutingAssembly() ?? throw new Exception("Executing Assembly Is Null");
@@ -46,7 +50,40 @@ if (OperatingSystem.IsLinux())
     builder.Services.AddSystemd();
 }
 
+// Add the Configuration
+builder.Services.AddSingleton<RouterSetup>(provider => {
 
+    var configurationFileName = Path.Combine(AppContext.BaseDirectory, "router.json");
+    RouterSetup? routerSetup = null;
+
+    if (File.Exists(configurationFileName))
+        routerSetup = JsonSerializer.Deserialize<RouterSetup>(System.IO.File.ReadAllText(configurationFileName, Encoding.UTF8));
+
+    routerSetup ??= new RouterSetup()
+    {
+        Path = AppContext.BaseDirectory,
+    };
+
+    return routerSetup;
+});
+
+// Add the Folders
+builder.Services.AddSingleton<Folders>(provider => {
+
+    var routerSetup = provider.GetRequiredService<RouterSetup>();
+    var path = (routerSetup is null ? AppContext.BaseDirectory :
+                                      (routerSetup.Path is null ? AppContext.BaseDirectory :
+                                                                  routerSetup.Path));
+
+    return new Folders(path);
+});
+
+// Add Processors
+builder.Services.AddSingleton<RouterProcessor>(provider => {
+    return new RouterProcessor(4, provider.GetRequiredService<ILogger<RouterProcessor>>(), provider.GetRequiredService<Folders>());
+});
+
+// Add the Worker to call the processors
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();

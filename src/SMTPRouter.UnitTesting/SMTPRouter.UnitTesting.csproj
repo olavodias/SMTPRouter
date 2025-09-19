@@ -16,7 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.13.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.12.6" />
     <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.3" />
@@ -26,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
     <ProjectReference Include="..\SMTPRouter.Listener\SMTPRouter.Listener.csproj" />
+    <ProjectReference Include="..\SMTPRouter.Router\SMTPRouter.Router.csproj" />
   </ItemGroup>
 
   <ItemGroup>

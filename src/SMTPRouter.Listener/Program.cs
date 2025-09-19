@@ -5,6 +5,7 @@ using SMTPRouter;
 using SMTPRouter.ConfigurationSchema;
 using SMTPRouter.Listener;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -33,7 +34,11 @@ builder.Services.AddLogging(options => {
 
     if (OperatingSystem.IsWindows())
     {
+        if (!EventLog.SourceExists(serviceName))
+            EventLog.CreateEventSource(serviceName, "SMTPRouter Service");
+
         options.AddEventLog(eventLog => {
+            
             eventLog.SourceName = serviceName;
         });
     }
@@ -41,7 +46,6 @@ builder.Services.AddLogging(options => {
 #pragma warning restore CA1416 // Validate platform compatibility
 
 });
-
 
 // Make it a Service
 if (OperatingSystem.IsWindows())
@@ -65,7 +69,7 @@ builder.Services.AddSingleton<Hosting>(provider =>
     Hosting? hosting = null;
 
     if (File.Exists(configurationFileName))
-        hosting = JsonSerializer.Deserialize<Hosting>(System.IO.File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "listener.json"), Encoding.UTF8));
+        hosting = JsonSerializer.Deserialize<Hosting>(System.IO.File.ReadAllText(configurationFileName, Encoding.UTF8));
 
     hosting ??= new Hosting()
     {

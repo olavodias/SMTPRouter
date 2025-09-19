@@ -1,12 +1,10 @@
 ﻿#pragma warning disable IDE0060 // Remove unused parameter
 
-using SMTPRouter.ConfigurationSchema;
-using SMTPRouter.Listener;
-using MailKit.Net.Smtp;
 using MimeKit;
-using System.Diagnostics;
+using MailKit.Net.Smtp;
+using SMTPRouter.ConfigurationSchema;
 
-namespace SMTPRouter.Listener.UnitTesting
+namespace SMTPRouter.UnitTesting
 {
     [TestClass]
     [DoNotParallelize]

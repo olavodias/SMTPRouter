@@ -17,12 +17,18 @@ namespace SMTPRouter
     /// <summary>
     /// Process to listen to SMTP Messages and store them in a local folder
     /// </summary>
-    internal class ListenerProcessor : IProcessor
+    public sealed class ListenerProcessor : IProcessor
     {
         private readonly ILogger<ListenerProcessor>? _logger;
         internal readonly Hosting? _hosting;
         private readonly Folders? _folders;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ListenerProcessor"/> class
+        /// </summary>
+        /// <param name="logger">The logger</param>
+        /// <param name="hosting">The hosting information</param>
+        /// <param name="folders">The folders information</param>
         public ListenerProcessor(ILogger<ListenerProcessor>? logger, Hosting? hosting, Folders? folders)
         {
             _logger = logger;
@@ -30,6 +36,7 @@ namespace SMTPRouter
             _folders = folders;
         }
 
+        /// <inheritdoc/>
         public Task DoWorkAsync(CancellationToken stoppingToken)
         {
             _logger?.LogInformation("ListenerProcessor DoWorkAsync Start: {time}", DateTimeOffset.Now);
