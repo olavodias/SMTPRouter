@@ -18,6 +18,7 @@ namespace SMTPRouter.Listener
     /// </summary>
     internal sealed class SmtpMessageStore: MessageStore
     {
+
         /// <summary>
         /// Event triggered when a message is received
         /// </summary>
@@ -33,9 +34,11 @@ namespace SMTPRouter.Listener
         /// </summary>
         public string StorePhysicalPath { get; set; }
 
-        public string StorePhysicalPathOutgoing { get; }
+        public string StorePhysicalPathReceived { get; }
 
         public string StorePhysicalPathErrors { get; }
+
+        public string StorePhysicalPathRejected { get; }
 
         /// <summary>
         /// Initializes a new instance of the SmtpMessageStore
@@ -46,8 +49,9 @@ namespace SMTPRouter.Listener
                 throw new ArgumentNullException(nameof(storePhysicalPath));
 
             StorePhysicalPath = storePhysicalPath;
-            StorePhysicalPathOutgoing = Path.Combine(StorePhysicalPath, "Outgoing");
-            StorePhysicalPathErrors = Path.Combine(StorePhysicalPath, "Errors");
+            StorePhysicalPathRejected = Path.Combine(StorePhysicalPath, Folders.FILES_LISTENER_REJECTED);
+            StorePhysicalPathReceived = Path.Combine(StorePhysicalPath, Folders.FILES_LISTENER_RECEIVED);
+            StorePhysicalPathErrors = Path.Combine(StorePhysicalPath, Folders.FILES_LISTENER_ERRORS);
         }
 
         /// <inheritdoc/>
@@ -84,8 +88,8 @@ namespace SMTPRouter.Listener
                 smtpMessage.ReceivedByHostName = System.Net.Dns.GetHostName();
 
                 // Save Message to Folder
-                if (!string.IsNullOrEmpty(StorePhysicalPathOutgoing))
-                    smtpMessage.SaveToFile(StorePhysicalPathOutgoing);
+                if (!string.IsNullOrEmpty(StorePhysicalPathReceived))
+                    smtpMessage.SaveToFile(StorePhysicalPathReceived);
                     
                 // Trigger Event to inform a message was received
                 MessageReceived?.Invoke(this, new MessageEventArgs(smtpMessage));

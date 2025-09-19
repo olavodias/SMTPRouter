@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 
 namespace SMTPRouter;
 
@@ -80,6 +81,30 @@ public sealed class SmtpMessage
     /// </summary>
     public Dictionary<string, string> Parameters { get; set; } = new();
 
+
+    private static readonly object _internalCounterLock = new();
+
+    /// <summary>
+    /// An internal numeric counter to attempt to give a unique number for each file
+    /// </summary>
+    /// <remarks>Using a <see cref="uint"/> type to give a maximum of 4,294,967,295 files at the same second</remarks>
+    private static uint _internalCounter = 0;
+
+    /// <summary>
+    /// Returns the next File Id
+    /// </summary>
+    /// <remarks>Once it reaches the end, it will automatically restart</remarks>
+    /// <returns>The Next File Id</returns>
+    public static uint GetNextFileId()
+    {
+        lock (_internalCounterLock)
+        {
+            _internalCounter++;
+        }
+        
+        return _internalCounter;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SmtpMessage"/> class
     /// </summary>
@@ -102,13 +127,7 @@ public sealed class SmtpMessage
             if (string.IsNullOrWhiteSpace(Contents)) throw new ArgumentNullException(nameof(Contents));
 
             // Define Output File Name
-            var i = 1;
-            string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:00000}.eml");
-            while (File.Exists(fileName))
-            {
-                i++;
-                fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{i:00000}.eml");
-            }
+            string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{GetNextFileId():0000000000}.eml");
 
             // Create Output File
             using (var fileStream = File.Create(fileName))

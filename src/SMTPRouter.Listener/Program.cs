@@ -2,9 +2,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SMTPRouter;
+using SMTPRouter.ConfigurationSchema;
 using SMTPRouter.Listener;
 using System;
+using System.IO;
 using System.Reflection;
+using System.Text;
+using System.Text.Json;
 
 // Get Assembly Information for Service / EventLog Registration
 var currentAssembly = Assembly.GetExecutingAssembly() ?? throw new Exception("Executing Assembly Is Null");
@@ -38,6 +42,8 @@ builder.Services.AddLogging(options => {
 
 });
 
+
+// Make it a Service
 if (OperatingSystem.IsWindows())
 {
     builder.Services.AddWindowsService(options =>
@@ -51,11 +57,49 @@ if (OperatingSystem.IsLinux())
     builder.Services.AddSystemd();
 }
 
+// Add the Hosting Information
+//TODO: maybe add an extension method "AddSmtpRouterHosting"
+builder.Services.AddSingleton<Hosting>(provider =>
+{
+    var configurationFileName = Path.Combine(AppContext.BaseDirectory, "listener.json");
+    Hosting? hosting = null;
+
+    if (File.Exists(configurationFileName))
+        hosting = JsonSerializer.Deserialize<Hosting>(System.IO.File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "listener.json"), Encoding.UTF8));
+
+    hosting ??= new Hosting()
+    {
+        Server = "localhost",
+        PortsConfiguration = new System.Collections.Generic.Dictionary<string, PortConfiguration>
+        {
+            { "Default", new PortConfiguration(25, false) }
+        },
+        Path = AppContext.BaseDirectory,
+    };
+
+    return hosting;
+});
+
+// Add the Folders
+builder.Services.AddSingleton<Folders>(provider =>
+{
+    var hosting = provider.GetRequiredService<Hosting>();
+    var path = hosting is null ? AppContext.BaseDirectory : 
+                                (hosting.Path is null ? AppContext.BaseDirectory : 
+                                                        hosting.Path);
+
+    return new Folders(path);
+});
+
+// Add the Processor
 builder.Services.AddSingleton<IProcessor>(provider =>
 {
-    return new ListenerProcessor(provider.GetRequiredService<ILogger<ListenerProcessor>>());
+    return new ListenerProcessor(provider.GetRequiredService<ILogger<ListenerProcessor>>(), provider.GetRequiredService<Hosting>(), provider.GetRequiredService<Folders>());
 });
+
+// Add the Worker to call the processor
 builder.Services.AddHostedService<Worker>();
 
+// Build and Run the host
 var host = builder.Build();
 host.Run();

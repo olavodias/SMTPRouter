@@ -22,15 +22,15 @@ namespace SMTPRouter.Listener.UnitTesting
         }
 
         [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-        public static void ClassCleanup() 
+        public static void ClassCleanup()
         {
             if (Directory.Exists(RootFolder))
                 Directory.Delete(RootFolder, true);
         }
 
         private string testRootFolder = string.Empty;
-        private string outgoingFolder = string.Empty;
-        private ListenerProcessor listener = new();
+        private string receivedFolder = string.Empty;
+        private ListenerProcessor? listener;
         private CancellationTokenSource cts = new();
 
 
@@ -48,23 +48,20 @@ namespace SMTPRouter.Listener.UnitTesting
             Directory.CreateDirectory(testRootFolder);
 
             // Setup Outgoing Folder
-            outgoingFolder = Path.Combine(testRootFolder, ListenerProcessor.PATH_QUEUES, "Outgoing");
+            receivedFolder = Path.Combine(testRootFolder, Folders.FILES, Folders.FILES_LISTENER_RECEIVED);
 
-            Directory.CreateDirectory(outgoingFolder);
+            Directory.CreateDirectory(receivedFolder);
 
             // Create the Local Listener
-            listener = new ListenerProcessor
+            listener = new ListenerProcessor(null, new Hosting()
             {
-                Hosting = new ConfigurationSchema.Hosting()
-                {
-                    Server = "localhost",
-                    Path = testRootFolder,
-                    PortsConfiguration = new()
+                Server = "localhost",
+                Path = testRootFolder,
+                PortsConfiguration = new()
                     {
                         { "Default", new PortConfiguration(25, false) }
                     }
-                },
-            };
+            }, new Folders(testRootFolder));
 
             // Recreate Token Source
             cts = new CancellationTokenSource();
@@ -84,9 +81,33 @@ namespace SMTPRouter.Listener.UnitTesting
             cts?.Dispose();
         }
 
+        private void SendEmail()
+        {
+            // Send an email to the new SMTP
+            using var smtpClient = new SmtpClient();
+            smtpClient.Connect("localhost", 25, MailKit.Security.SecureSocketOptions.Auto);
+
+            using var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
+            message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
+
+            message.Subject = "Unit Test Email";
+
+            var messageBodyBuilder = new BodyBuilder
+            {
+                TextBody = "This is a test email generating during Unit Testing"
+            };
+
+            message.Body = messageBodyBuilder.ToMessageBody();
+
+            smtpClient.Send(FormatOptions.Default, message, cts.Token);
+        }
+
         [TestMethod]
         public void TestListenerProcessor_ReceiveEmail()
         {
+            Assert.IsNotNull(listener);
+
             try
             {
                 // Start Listener Concurrently
@@ -95,30 +116,14 @@ namespace SMTPRouter.Listener.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Send an email to the new SMTP
-                using var smtpClient = new SmtpClient();
-                smtpClient.Connect(listener.Hosting?.Server, 25, MailKit.Security.SecureSocketOptions.Auto);
-
-                using var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
-                message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
-
-                message.Subject = "Unit Test Email";
-
-                var messageBodyBuilder = new BodyBuilder
-                {
-                    TextBody = "This is a test email generating during Unit Testing"
-                };
-
-                message.Body = messageBodyBuilder.ToMessageBody();
-
-                smtpClient.Send(FormatOptions.Default, message, cts.Token);
+                // Sends the Email
+                SendEmail();
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
 
                 // Check if there is something in the Outgoing Folder
-                var files = Directory.GetFiles(outgoingFolder);
+                var files = Directory.GetFiles(receivedFolder);
 
                 Assert.IsNotNull(files);
                 Assert.AreEqual(1, files.Length);
@@ -132,9 +137,11 @@ namespace SMTPRouter.Listener.UnitTesting
         [TestMethod]
         public void TestListenerProcessor_ReceiveEmail_AcceptLocalHost()
         {
+            Assert.IsNotNull(listener);
+            Assert.IsNotNull(listener._hosting);
+
             // Setup the Listener
-            if (listener.Hosting is null) throw new ArgumentNullException(nameof(Hosting));
-            listener.Hosting.AcceptedIPAddresses = ["127.0.0.1"];
+            listener._hosting.AcceptedIPAddresses = ["127.0.0.1"];
 
             try
             {
@@ -144,30 +151,14 @@ namespace SMTPRouter.Listener.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Send an email to the new SMTP
-                using var smtpClient = new SmtpClient();
-                smtpClient.Connect(listener.Hosting?.Server, 25, MailKit.Security.SecureSocketOptions.Auto);
-
-                using var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
-                message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
-
-                message.Subject = "Unit Test Email";
-
-                var messageBodyBuilder = new BodyBuilder
-                {
-                    TextBody = "This is a test email generating during Unit Testing"
-                };
-
-                message.Body = messageBodyBuilder.ToMessageBody();
-
-                smtpClient.Send(FormatOptions.Default, message, cts.Token);
+                // Sends the Email
+                SendEmail();
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
 
                 // Check if there is something in the Outgoing Folder
-                var files = Directory.GetFiles(outgoingFolder);
+                var files = Directory.GetFiles(receivedFolder);
 
                 Assert.IsNotNull(files);
                 Assert.AreEqual(1, files.Length);
@@ -181,9 +172,11 @@ namespace SMTPRouter.Listener.UnitTesting
         [TestMethod]
         public void TestListenerProcessor_ReceiveEmail_AcceptAnyOtherHost()
         {
+            Assert.IsNotNull(listener);
+            Assert.IsNotNull(listener._hosting);
+
             // Setup the Listener
-            if (listener.Hosting is null) throw new ArgumentNullException(nameof(Hosting));
-            listener.Hosting.AcceptedIPAddresses = ["169.254.1.1"];
+            listener._hosting.AcceptedIPAddresses = ["169.254.1.1"];
 
             try
             {
@@ -193,41 +186,14 @@ namespace SMTPRouter.Listener.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Send an email to the new SMTP
-                using var smtpClient = new SmtpClient();
-                smtpClient.Connect(listener.Hosting.Server, 25, MailKit.Security.SecureSocketOptions.Auto);
-
-                using var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
-                message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
-
-                message.Subject = "Unit Test Email";
-
-                var messageBodyBuilder = new BodyBuilder
-                {
-                    TextBody = "This is a test email generating during Unit Testing"
-                };
-
-                message.Body = messageBodyBuilder.ToMessageBody();
-
-                try
-                {
-                    smtpClient.Send(FormatOptions.Default, message, cts.Token);
-                }
-                catch (SmtpCommandException)
-                {
-
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                // Sends the Email
+                SendEmail();
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
 
                 // Check if there is something in the Outgoing Folder
-                var files = Directory.GetFiles(outgoingFolder);
+                var files = Directory.GetFiles(receivedFolder);
 
                 Assert.IsNotNull(files);
                 Assert.AreEqual(0, files.Length);
@@ -241,9 +207,11 @@ namespace SMTPRouter.Listener.UnitTesting
         [TestMethod]
         public void TestListenerProcessor_ReceiveEmail_RejectLocalHost()
         {
+            Assert.IsNotNull(listener);
+            Assert.IsNotNull(listener._hosting);
+
             // Setup the Listener
-            if (listener.Hosting is null) throw new ArgumentNullException(nameof(Hosting));
-            listener.Hosting.RejectedIPAddresses = ["127.0.0.1"];
+            listener._hosting.RejectedIPAddresses = ["127.0.0.1"];
 
             try
             {
@@ -253,41 +221,14 @@ namespace SMTPRouter.Listener.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Send an email to the new SMTP
-                using var smtpClient = new SmtpClient();
-                smtpClient.Connect(listener.Hosting.Server, 25, MailKit.Security.SecureSocketOptions.Auto);
-
-                using var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
-                message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
-
-                message.Subject = "Unit Test Email";
-
-                var messageBodyBuilder = new BodyBuilder
-                {
-                    TextBody = "This is a test email generating during Unit Testing"
-                };
-
-                message.Body = messageBodyBuilder.ToMessageBody();
-
-                try
-                {
-                    smtpClient.Send(FormatOptions.Default, message, cts.Token);
-                }
-                catch (SmtpCommandException)
-                {
-
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                // Sends the Email
+                SendEmail();
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
 
                 // Check if there is something in the Outgoing Folder
-                var files = Directory.GetFiles(outgoingFolder);
+                var files = Directory.GetFiles(receivedFolder);
 
                 Assert.IsNotNull(files);
                 Assert.AreEqual(0, files.Length);
@@ -301,9 +242,11 @@ namespace SMTPRouter.Listener.UnitTesting
         [TestMethod]
         public void TestListenerProcessor_ReceiveEmail_RejectAnyOtherHost()
         {
+            Assert.IsNotNull(listener);
+            Assert.IsNotNull(listener._hosting);
+
             // Setup the Listener
-            if (listener.Hosting is null) throw new ArgumentNullException(nameof(Hosting));
-            listener.Hosting.RejectedIPAddresses = ["169.254.1.1"];
+            listener._hosting.RejectedIPAddresses = ["169.254.1.1"];
 
             try
             {
@@ -313,41 +256,14 @@ namespace SMTPRouter.Listener.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Send an email to the new SMTP
-                using var smtpClient = new SmtpClient();
-                smtpClient.Connect(listener.Hosting.Server, 25, MailKit.Security.SecureSocketOptions.Auto);
-
-                using var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("Sender", "sender@test.com"));
-                message.To.Add(new MailboxAddress("Recipient", "recipient@test.com"));
-
-                message.Subject = "Unit Test Email";
-
-                var messageBodyBuilder = new BodyBuilder
-                {
-                    TextBody = "This is a test email generating during Unit Testing"
-                };
-
-                message.Body = messageBodyBuilder.ToMessageBody();
-
-                try
-                {
-                    smtpClient.Send(FormatOptions.Default, message, cts.Token);
-                }
-                catch (SmtpCommandException)
-                {
-
-                }
-                catch (Exception)
-                {
-                    throw;
-                }
+                // Sends the Email
+                SendEmail();
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
 
                 // Check if there is something in the Outgoing Folder
-                var files = Directory.GetFiles(outgoingFolder);
+                var files = Directory.GetFiles(receivedFolder);
 
                 Assert.IsNotNull(files);
                 Assert.AreEqual(1, files.Length);

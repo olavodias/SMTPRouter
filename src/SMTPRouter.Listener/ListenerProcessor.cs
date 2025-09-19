@@ -19,57 +19,38 @@ namespace SMTPRouter
     /// </summary>
     internal class ListenerProcessor : IProcessor
     {
-        public const string PATH_QUEUES = "Queues";
-
         private readonly ILogger<ListenerProcessor>? _logger;
+        internal readonly Hosting? _hosting;
+        private readonly Folders? _folders;
 
-        public ListenerProcessor()
-        {
-            
-        }
-
-        public ListenerProcessor(ILogger<ListenerProcessor> logger)
+        public ListenerProcessor(ILogger<ListenerProcessor>? logger, Hosting? hosting, Folders? folders)
         {
             _logger = logger;
+            _hosting = hosting;
+            _folders = folders;
         }
-
-        /// <summary>
-        /// The Hosting Configuration
-        /// </summary>
-        /// <remarks>When left null, the system will try to retrieve the configuration for a file named "listener.json"</remarks>
-        public Hosting? Hosting { get; set; }
 
         public Task DoWorkAsync(CancellationToken stoppingToken)
         {
             _logger?.LogInformation("ListenerProcessor DoWorkAsync Start: {time}", DateTimeOffset.Now);
 
-            // Read / Validate Configuration
-            if (Hosting is null)
-            {
-                Hosting = JsonSerializer.Deserialize<Hosting>(System.IO.File.ReadAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "listener.json"), Encoding.UTF8));
-
-                if (Hosting is null)
-                    throw new InvalidOperationException("The configuration file is not valid");
-            }
-
             // Create and Run SMTP Server
-            var smtpServer = CreateSmtpServer(Hosting);
+            var smtpServer = CreateSmtpServer();
             return smtpServer.StartAsync(stoppingToken);
         }
-        private SmtpServer.SmtpServer CreateSmtpServer(Hosting hosting)
+        private SmtpServer.SmtpServer CreateSmtpServer()
         {
-            if (string.IsNullOrEmpty(hosting.Path))
+            if (string.IsNullOrEmpty(_hosting?.Path))
                 throw new InvalidOperationException("Property \"Path\" not defined");
 
             // Setup Paths
-            CreateDirectory(Path.Combine(hosting.Path, PATH_QUEUES));
-            CreateDirectory(Path.Combine(hosting.Path, PATH_QUEUES, "Outgoing"));
-            CreateDirectory(Path.Combine(hosting.Path, PATH_QUEUES, "InQueue"));
-            CreateDirectory(Path.Combine(hosting.Path, PATH_QUEUES, "Error"));
-            CreateDirectory(Path.Combine(hosting.Path, PATH_QUEUES, "Rejected"));
+            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES));
+            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_REJECTED));
+            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_RECEIVED));
+            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_ERRORS));
 
             // Setup the MessageStore
-            var smtpMessageStore = new SmtpMessageStore(Path.Combine(hosting.Path, PATH_QUEUES));
+            var smtpMessageStore = new SmtpMessageStore(Path.Combine(_hosting.Path, Folders.FILES));
             smtpMessageStore.MessageReceived += SmtpMessageStore_MessageReceived;
             smtpMessageStore.MessageReceivedWithErrors += SmtpMessageStore_MessageReceivedWithErrors;
 
@@ -77,27 +58,27 @@ namespace SMTPRouter
             var optionsBuilder = new SmtpServerOptionsBuilder();
 
             // Setup Server
-            if (string.IsNullOrEmpty(hosting.Server))
+            if (string.IsNullOrEmpty(_hosting.Server))
                 throw new InvalidOperationException("Property \"Server\" not defined");
 
-            optionsBuilder.ServerName(hosting.Server);
+            optionsBuilder.ServerName(_hosting.Server);
 
             // Setup Ports
-            if (hosting.PortsConfiguration is null)
+            if (_hosting.PortsConfiguration is null)
                 throw new InvalidOperationException("Dictionary \"PortsConfiguration\" not defined");
 
-            if (hosting.PortsConfiguration.Count == 0)
+            if (_hosting.PortsConfiguration.Count == 0)
                 throw new InvalidOperationException("Dictionary \"PortsConfiguration\" is defined, but empty");
 
-            foreach (var pi in hosting.PortsConfiguration)
+            foreach (var pi in _hosting.PortsConfiguration)
             {
                 optionsBuilder.Endpoint(b => b.Port(pi.Value.Number, pi.Value.IsSecure)
                                               .AllowUnsecureAuthentication(pi.Value.IsSecure)
-                                              .AuthenticationRequired(hosting.RequiresAuthentication));
+                                              .AuthenticationRequired(_hosting.RequiresAuthentication));
             }
 
             // Setup Filters
-            var smtpMailboxFilters = new SmtpMailboxFilter(hosting.AcceptedIPAddresses, hosting.RejectedIPAddresses);
+            var smtpMailboxFilters = new SmtpMailboxFilter(_hosting.AcceptedIPAddresses, _hosting.RejectedIPAddresses);
             smtpMailboxFilters.MessageFiltered += SmtpMailboxFilters_MessageFiltered;
 
             // Setup Providers
