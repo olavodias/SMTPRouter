@@ -21,7 +21,9 @@ namespace SMTPRouter
     {
         private readonly ILogger<ListenerProcessor>? _logger;
         internal readonly Hosting? _hosting;
-        private readonly Folders? _folders;
+        internal readonly Folders? _folders;
+
+        //TODO: Implement Events
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ListenerProcessor"/> class
@@ -51,10 +53,10 @@ namespace SMTPRouter
                 throw new InvalidOperationException("Property \"Path\" not defined");
 
             // Setup Paths
-            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES));
-            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_REJECTED));
-            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_RECEIVED));
-            CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_ERRORS));
+            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES));
+            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_REJECTED));
+            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_RECEIVED));
+            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_ERRORS));
 
             // Setup the MessageStore
             var smtpMessageStore = new SmtpMessageStore(Path.Combine(_hosting.Path, Folders.FILES));

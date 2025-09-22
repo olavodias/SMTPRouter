@@ -1,4 +1,5 @@
 {
+  "RoutingActiveThreads": 4,
   "Path": "C:\\SmtpRouter\\",
   "Connections": {
     "Smtp01": {
@@ -8,6 +9,7 @@
       "RequiresAuthentication": false,
       "SecureSocketOption": "0",
       "ActiveConnections": 4,
+      "MaximumRetryAttempts": 3,
       "GroupingOption": 2
     },
     "Smtp02": {
@@ -17,6 +19,7 @@
       "RequiresAuthentication": false,
       "SecureSocketOption": "0",
       "ActiveConnections": 1,
+      "MaximumRetryAttempts": 3,
       "GroupingOption": 2
     }
   },

@@ -28,10 +28,10 @@ public sealed class MailFromDomainRoutingRule : IRoutingRule
         try
         {
             if (message.MailFrom is null) return false;
-            if (message.MailFrom.Value.Host is null) return false;
+            if (message.MailFrom.Host is null) return false;
             if (string.IsNullOrWhiteSpace(Domain)) return false;
 
-            return message.MailFrom.Value.Host.Equals(Domain);
+            return message.MailFrom.Host.Equals(Domain);
         }
         catch (Exception)
         {

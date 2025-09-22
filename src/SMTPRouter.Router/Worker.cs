@@ -13,10 +13,10 @@ public class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var taskList = new List<Task>();
-
-        taskList.Add(_routerProcessor.DoWorkAsync(stoppingToken));
-        //TODO: append one task per connection
+        var taskList = new List<Task>
+        {
+            _routerProcessor.DoWorkAsync(stoppingToken)
+        };
 
         await Task.WhenAll(taskList);
     }

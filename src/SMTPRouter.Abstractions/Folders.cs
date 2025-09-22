@@ -79,6 +79,7 @@ public sealed class Folders
     /// <param name="rootPath">The hosting root path</param>
     public Folders(string rootPath)
     {
+        RootPath = rootPath;
         Files = Path.Combine(rootPath, FILES);
         
         FilesListenerRejected = Path.Combine(rootPath, FILES, FILES_LISTENER_REJECTED);
@@ -97,6 +98,29 @@ public sealed class Folders
         if (!Directory.Exists(FilesRouterRouted)) Directory.CreateDirectory(FilesRouterRouted);
         if (!Directory.Exists(FilesRouterError)) Directory.CreateDirectory(FilesRouterError);
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Folders"/> class
+    /// </summary>
+    /// <param name="rootPath">The hosting root path</param>
+    /// <param name="connectionName">The name of the connection</param>
+    public Folders(string rootPath, string connectionName): this(rootPath)
+    {
+        FilesConnectionErrors = Path.Combine(FilesRouterRouted, connectionName, FILES_CONNECTION_ERRORS);
+        FilesConnectionInQueue = Path.Combine(FilesRouterRouted, connectionName, FILES_CONNECTION_IN_QUEUE);
+        FilesConnectionSending = Path.Combine(FilesRouterRouted, connectionName, FILES_CONNECTION_SENDING);
+        FilesConnectionSent = Path.Combine(FilesRouterRouted, connectionName, FILES_CONNECTION_SENT);
+
+        if (!Directory.Exists(FilesConnectionErrors)) Directory.CreateDirectory(FilesConnectionErrors);
+        if (!Directory.Exists(FilesConnectionInQueue)) Directory.CreateDirectory(FilesConnectionInQueue);
+        if (!Directory.Exists(FilesConnectionSending)) Directory.CreateDirectory(FilesConnectionSending);
+        if (!Directory.Exists(FilesConnectionSent)) Directory.CreateDirectory(FilesConnectionSent);
+    }
+
+    /// <summary>
+    /// The root for the folder structure
+    /// </summary>
+    public string RootPath { get; }
 
     /// <summary>
     /// The folder where the files are located
@@ -132,5 +156,29 @@ public sealed class Folders
     /// The folder where the messages that could not be routed are stored
     /// </summary>
     public string FilesRouterError { get; }
+
+
+
+    /// <summary>
+    /// The folder where the routed messages waiting to be sent are stored
+    /// </summary>
+    /// <remarks>This folder is not defined unless a connection name is specified in the constructor</remarks>
+    public string FilesConnectionInQueue { get; } = string.Empty;
+    /// <summary>
+    /// The folder where the routed messages being sent are stored
+    /// </summary>
+    /// <remarks>This folder is not defined unless a connection name is specified in the constructor</remarks>
+    public string FilesConnectionSending { get; } = string.Empty;
+    /// <summary>
+    /// The folder where the routed messages that were successfully processed are stored
+    /// </summary>
+    /// <remarks>The files are stored based on the Grouping Option parameter in the connection configuration</remarks>
+    /// <remarks>This folder is not defined unless a connection name is specified in the constructor</remarks>
+    public string FilesConnectionSent { get; } = string.Empty;
+    /// <summary>
+    /// The folder where the routed messages that could not be sent are stored
+    /// </summary>
+    /// <remarks>This folder is not defined unless a connection name is specified in the constructor</remarks>
+    public string FilesConnectionErrors { get; } = string.Empty;
 
 }

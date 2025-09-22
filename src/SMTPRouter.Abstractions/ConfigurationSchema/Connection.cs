@@ -42,6 +42,11 @@ public class Connection
     public int ActiveConnections { get; set; }
 
     /// <summary>
+    /// The maximum number of attemps the system will try to send an email
+    /// </summary>
+    public int MaximumRetryAttempts { get; set; }
+
+    /// <summary>
     /// Defines how to group the data in the routed folders
     /// </summary>
     public int GroupingOption { get; set; }

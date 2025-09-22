@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using SMTPRouter;
 using SMTPRouter.ConfigurationSchema;
 using SMTPRouter.Router;
@@ -61,6 +62,7 @@ builder.Services.AddSingleton<RouterSetup>(provider => {
 
     routerSetup ??= new RouterSetup()
     {
+        RoutingActiveThreads = 4,
         Path = AppContext.BaseDirectory,
     };
 
@@ -74,13 +76,12 @@ builder.Services.AddSingleton<Folders>(provider => {
     var path = (routerSetup is null ? AppContext.BaseDirectory :
                                       (routerSetup.Path is null ? AppContext.BaseDirectory :
                                                                   routerSetup.Path));
-
     return new Folders(path);
 });
 
 // Add Processors
 builder.Services.AddSingleton<RouterProcessor>(provider => {
-    return new RouterProcessor(4, provider.GetRequiredService<ILogger<RouterProcessor>>(), provider.GetRequiredService<Folders>());
+    return new RouterProcessor(provider.GetRequiredService<ILogger<RouterProcessor>>(), provider.GetRequiredService<RouterSetup>(), provider.GetRequiredService<Folders>());
 });
 
 // Add the Worker to call the processors
@@ -88,3 +89,5 @@ builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();
 host.Run();
+
+

@@ -11,6 +11,10 @@ namespace SMTPRouter;
 public static class LoggingEvents
 {
 
+    // **********************************************************************
+    // General Events
+    // **********************************************************************
+
     /// <summary>
     /// The source of the message is not authorized to relay emails thru the SMTP
     /// </summary>
@@ -19,6 +23,37 @@ public static class LoggingEvents
     /// <summary>
     /// The message was received but there were errors during the save process
     /// </summary>
-    public static EventId MessageReceivedWithErrors = new(1001, name: nameof(MessageReceivedWithErrors));
+    public static EventId MessageReceivedWithErrors = new(1001, nameof(MessageReceivedWithErrors));
+
+    // **********************************************************************
+    // Routing Events
+    // **********************************************************************
+
+    /// <summary>
+    /// The system failed when attempting to retrieve messages to route
+    /// </summary>
+    /// <remarks>This is thrown if something failed in the process, but there were files to be processed</remarks>
+    public static EventId UnableToRetrieveMessagesToRoute = new(2000, nameof(UnableToRetrieveMessagesToRoute));
+
+    /// <summary>
+    /// There were errors during the routing process
+    /// </summary>
+    public static EventId RoutingErrors = new(2001, nameof(RoutingErrors));
+
+    // **********************************************************************
+    // Connection Events
+    // **********************************************************************
+
+    /// <summary>
+    /// The system failed when attempting to retrieve messages to send
+    /// </summary>
+    /// <remarks>This is thrown if something failed in the process, but there were files to be processed</remarks>
+    public static EventId UnableToRetrieveMessagesToSend = new(2500, nameof(UnableToRetrieveMessagesToRoute));
+
+    /// <summary>
+    /// The system failed when attempting to send a message thru an active connection
+    /// </summary>
+    public static EventId UnableToSendMessage = new(2501, nameof(UnableToSendMessage));
+
 
 }

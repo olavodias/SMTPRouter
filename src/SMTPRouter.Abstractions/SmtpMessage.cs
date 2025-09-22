@@ -1,4 +1,6 @@
-﻿using System;
+﻿#pragma warning disable IDE0063 // Use simple 'using' statement
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -81,7 +83,6 @@ public sealed class SmtpMessage
     /// </summary>
     public Dictionary<string, string> Parameters { get; set; } = new();
 
-
     private static readonly object _internalCounterLock = new();
 
     /// <summary>
@@ -114,62 +115,155 @@ public sealed class SmtpMessage
     }
 
     /// <summary>
+    /// Creates an instance of an <see cref="SmtpMessage"/> based on a file
+    /// </summary>
+    /// <param name="filename">The file name</param>
+    /// <returns>An <see cref="SmtpMessage"/> based on the <paramref name="filename"/></returns>
+    public static SmtpMessage LoadFile(string filename)
+    {
+        var message = new SmtpMessage();
+        var fileLocation = FileLocation.Undefined;
+
+        // Opens the file
+        using (var fileStream = File.OpenRead(filename))
+        {
+            string line = "";
+
+            // Read each each line of the file and attemps to make sense of it
+            using (var reader = new StreamReader(fileStream, Encoding.UTF8)) 
+            {
+                while (!reader.EndOfStream)
+                {
+                    line = reader.ReadLine();
+
+                    if (line.StartsWith(SMTPROUTER_HEADER_BEGIN))
+                    {
+                        fileLocation = FileLocation.Header;
+                        continue;
+                    }
+                    else if (line.StartsWith(SMTPROUTER_HEADER_END))
+                    {
+                        fileLocation = FileLocation.Contents;
+                    }
+
+                    if (fileLocation == FileLocation.Header)
+                    {
+                        var headerData = line.Split(':');
+
+                        if (headerData.Length != 2) continue;
+                        headerData[1] = headerData[1].Trim();
+
+                        switch (headerData[0])
+                        {
+                            case SMTPROUTER_HEADER_CREATIONTIME:
+                                message.CreationDateTime = DateTime.ParseExact(headerData[1], 
+                                                                               SMTPROUTER_HEADER_CREATIONTIME_FORMAT, 
+                                                                               System.Globalization.CultureInfo.InvariantCulture);
+                                break;
+
+                            case SMTPROUTER_HEADER_FROM:
+                                message.MailFrom = new SmtpMailbox(headerData[1]);
+                                break;
+
+                            case SMTPROUTER_HEADER_ORIGIN_IP_ADDRESS:
+                                message.OriginIPAddress = headerData[1];
+                                break;
+
+                            case SMTPROUTER_HEADER_RECEIVEDBY_IP_ADDRESS:
+                                message.ReceivedByIPAddress = headerData[1];
+                                break;
+
+                            case SMTPROUTER_HEADER_RECEIVEDBY_HOSTNAME:
+                                message.ReceivedByHostName = headerData[1];
+                                break;
+
+                            case SMTPROUTER_HEADER_TO:
+                                var mailTo = new SmtpMailbox(headerData[1]);
+                                if (!message.Recipients.Contains(mailTo))
+                                    message.Recipients.Add(new SmtpMailbox(headerData[1]));
+
+                                break;
+                        }
+
+                        continue;
+                    }
+
+                    if (fileLocation == FileLocation.Contents)
+                    {
+                        message.Contents = reader.ReadToEnd();
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return message;
+    }
+
+    /// <summary>
     /// Save the <see cref="SmtpMessage"/> into a text file
     /// </summary>
     /// <param name="path">The path where the file should be saved</param>
     /// <returns>The full path of the file that was just generated</returns>
     public string SaveToFile(string path)
     {
-        try
+        // Minimum Parameters needed
+        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
+        if (string.IsNullOrWhiteSpace(Contents)) throw new ArgumentNullException(nameof(Contents));
+
+        // Define Output File Name
+        string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{GetNextFileId():0000000000}.eml");
+
+        // Create Output File
+        using (var fileStream = File.Create(fileName))
         {
-            // Minimum Parameters needed
-            if (string.IsNullOrWhiteSpace(path)) throw new ArgumentNullException(nameof(path));
-            if (string.IsNullOrWhiteSpace(Contents)) throw new ArgumentNullException(nameof(Contents));
+            using var stream = new MemoryStream();
+            using var streamWriter = new StreamWriter(stream, Encoding.UTF8);
 
-            // Define Output File Name
-            string fileName = Path.Combine(path, $"{CreationDateTime:yyyyMMddHHmmss}-{GetNextFileId():0000000000}.eml");
+            streamWriter.AutoFlush = false;
 
-            // Create Output File
-            using (var fileStream = File.Create(fileName))
-            {
-                using var stream = new MemoryStream();
-                //using var streamWriter = new StreamWriter(stream, Encoding.GetEncoding(28592));
-                using var streamWriter = new StreamWriter(stream, Encoding.UTF8);
+            streamWriter.WriteLine(SMTPROUTER_HEADER_BEGIN);
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_VERSION}: {SMTPROUTER_VERSION}");
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_CREATIONTIME}: {CreationDateTime.ToString(SMTPROUTER_HEADER_CREATIONTIME_FORMAT)}");
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_FROM}: {MailFrom}");
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_ORIGIN_IP_ADDRESS}: {OriginIPAddress}");
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_IP_ADDRESS}: {ReceivedByIPAddress}");
+            streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_HOSTNAME}: {ReceivedByHostName}");
 
-                streamWriter.AutoFlush = false;
+            foreach (var mailTo in Recipients)
+                streamWriter.WriteLine($"{SMTPROUTER_HEADER_TO}: {mailTo}");
 
-                streamWriter.WriteLine(SMTPROUTER_HEADER_BEGIN);
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_VERSION}: {SMTPROUTER_VERSION}");
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_CREATIONTIME}: {CreationDateTime.ToString(SMTPROUTER_HEADER_CREATIONTIME_FORMAT)}");
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_FROM}: {MailFrom}");
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_ORIGIN_IP_ADDRESS}: {OriginIPAddress}");
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_IP_ADDRESS}: {ReceivedByIPAddress}");
-                streamWriter.WriteLine($"{SMTPROUTER_HEADER_RECEIVEDBY_HOSTNAME}: {ReceivedByHostName}");
+            streamWriter.WriteLine(SMTPROUTER_HEADER_END);
+            streamWriter.WriteLine(Contents);
 
-                if (Recipients is not null)
-                {
-                    foreach (var mailTo in Recipients)
-                        streamWriter.WriteLine($"{SMTPROUTER_HEADER_TO}: {mailTo}");
-                }
+            streamWriter.Flush();
 
-                streamWriter.WriteLine(SMTPROUTER_HEADER_END);
-                streamWriter.WriteLine(Contents);
+            // Copy To File
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.CopyTo(fileStream);
 
-                streamWriter.Flush();
-
-                // Copy To File
-                stream.Seek(0, SeekOrigin.Begin);
-                stream.CopyTo(fileStream);
-
-                fileStream.Flush();
-            }
-
-            return fileName;
+            fileStream.Flush();
         }
-        catch (Exception)
-        {
 
-            throw;
-        }
+        return fileName;
+    }
+
+    /// <summary>
+    /// Converts the email contents into a stream 
+    /// </summary>
+    /// <returns>A Stream containig the message contents in UTF8</returns>
+    public Stream GetContentsAsStream()
+    {
+        var bytes = Encoding.UTF8.GetBytes(Contents);
+        return new MemoryStream(bytes);
     }
 }
+
+enum FileLocation: byte
+{
+    Undefined = 0,
+    Header = 1,
+    Contents = 2
+}
+
+#pragma warning restore IDE0063 // Use simple 'using' statement

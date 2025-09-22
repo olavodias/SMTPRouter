@@ -10,6 +10,11 @@ namespace SMTPRouter.ConfigurationSchema;
 public sealed class RouterSetup
 {
     /// <summary>
+    /// The number of threads attempting to routing messages
+    /// </summary>
+    public int RoutingActiveThreads { get; set; }
+
+    /// <summary>
     /// The path where the listener and router store the files
     /// </summary>
     public string? Path { get; set; }
