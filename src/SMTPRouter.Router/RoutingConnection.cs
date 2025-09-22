@@ -12,6 +12,8 @@ public sealed class RoutingConnection
 
     public Folders Folders { get; set; }
 
+    public int MaximumRetryAttempts { get; set; }
+
     public ConfigurationSchema.Connection ConnectionInfo { get; set; }
 
     public RoutingConnection(string key, Folders folders, ConfigurationSchema.Connection connectionInfo)
@@ -19,6 +21,12 @@ public sealed class RoutingConnection
         Key = key;
         Folders = folders;
         ConnectionInfo = connectionInfo;
-    }
 
+        if (connectionInfo.MaximumRetryAttempts < 0)
+            MaximumRetryAttempts = 0;
+        else if (connectionInfo.MaximumRetryAttempts > 5)
+            MaximumRetryAttempts = 5;
+        else
+            MaximumRetryAttempts = connectionInfo.MaximumRetryAttempts;
+    }
 }

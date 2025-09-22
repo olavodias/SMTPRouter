@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using SmtpServer;
+using SmtpServer.Mail;
 using SmtpServer.Net;
 using SmtpServer.Protocol;
 using SmtpServer.Storage;

@@ -49,7 +49,25 @@ public class Connection
     /// <summary>
     /// Defines how to group the data in the routed folders
     /// </summary>
-    public int GroupingOption { get; set; }
+    public GroupingOptions GroupingOption { get; set; }
 
 }
 
+/// <summary>
+///  Grouping options for the files on the Sent folder
+/// </summary>
+public enum GroupingOptions: byte
+{
+    /// <summary>
+    /// All files will be saved on the root folder
+    /// </summary>
+    NoGrouping = 0,
+    /// <summary>
+    /// All files will be saved on a folder per day
+    /// </summary>
+    GroupByDate = 1,
+    /// <summary>
+    /// All files will be saved on a folder per day and hour
+    /// </summary>
+    GroupByDateAndHour = 2
+}

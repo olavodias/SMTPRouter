@@ -79,9 +79,14 @@ builder.Services.AddSingleton<Folders>(provider => {
     return new Folders(path);
 });
 
-// Add Processors
+// Add Router Processor (it creates multiple connections itself)
 builder.Services.AddSingleton<RouterProcessor>(provider => {
     return new RouterProcessor(provider.GetRequiredService<ILogger<RouterProcessor>>(), provider.GetRequiredService<RouterSetup>(), provider.GetRequiredService<Folders>());
+});
+
+// Add Connection Orchestrator Processor (it creates multiple connections itself)
+builder.Services.AddSingleton<ConnectionOrchestrationProcessor>(provider => {
+    return new ConnectionOrchestrationProcessor(provider.GetRequiredService<ILogger<ConnectionOrchestrationProcessor>>(), provider.GetRequiredService<RouterSetup>(), provider.GetRequiredService<Folders>());
 });
 
 // Add the Worker to call the processors

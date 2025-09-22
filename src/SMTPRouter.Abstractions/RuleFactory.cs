@@ -22,6 +22,10 @@ public static class RuleFactory
         { "MailFromRegexMatchRoutingRule", typeof(MailFromRegexMatchRoutingRule) },
         { "RelayRoutingRule", typeof(RelayRoutingRule) },
     };
+
+    /// <summary>
+    /// A read-only dictionary with the types registered by the <see cref="RegisterTypes(Assembly)"/> method
+    /// </summary>
     public static IReadOnlyDictionary<string, Type> RegisteredTypes
     {
         get
@@ -45,7 +49,16 @@ public static class RuleFactory
         foreach (var type in types)
         {
             if (!string.IsNullOrWhiteSpace(type.FullName))
-                _registeredTypes.TryAdd(type.FullName, type);
+            {
+                try
+                {
+                    _registeredTypes.Add(type.FullName, type);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
         }
     }
 
@@ -61,7 +74,7 @@ public static class RuleFactory
     public static IRoutingRule Create(Rule ruleDefinition)
     {
         // Get the type based on the string description
-        if (string.IsNullOrWhiteSpace(ruleDefinition.Type))
+        if (ruleDefinition.Type is null || string.IsNullOrWhiteSpace(ruleDefinition.Type))
             throw new TypeLoadException($"The type specified on \"{ruleDefinition.ConnectionKey}\" is null or empty.");
         
         if (!RuleFactory.RegisteredTypes.TryGetValue(ruleDefinition.Type, out var routingRuleType))
@@ -91,7 +104,10 @@ public static class RuleFactory
 
                 try
                 {
-                    propertyInfo.SetValue(routingRule, Convert.ChangeType(p.Value, propertyInfo.PropertyType));
+                    if (propertyInfo.PropertyType == typeof(string))
+                        propertyInfo.SetValue(routingRule, p.Value.ToString());
+                    else
+                        propertyInfo.SetValue(routingRule, Convert.ChangeType(p.Value, propertyInfo.PropertyType));
                 }
                 catch (Exception e)
                 {

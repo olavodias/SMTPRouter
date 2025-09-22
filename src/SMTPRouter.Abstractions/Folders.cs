@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SMTPRouter.ConfigurationSchema;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -181,4 +182,40 @@ public sealed class Folders
     /// <remarks>This folder is not defined unless a connection name is specified in the constructor</remarks>
     public string FilesConnectionErrors { get; } = string.Empty;
 
+    /// <summary>
+    /// Returns the name of the folder based on the grouping options
+    /// </summary>
+    /// <param name="groupingOptions"></param>
+    /// <param name="dateTime"></param>
+    /// <returns>The name of the folder considering the grouping options</returns>
+    public string GetSentFolderWithGrouping(GroupingOptions groupingOptions, DateTime dateTime)
+    {
+        if (dateTime == DateTime.MinValue || dateTime == DateTime.MaxValue)
+            dateTime = DateTime.Now;
+
+        string folderToCreate = string.Empty;
+
+        try
+        {
+            switch (groupingOptions)
+            {
+                case GroupingOptions.GroupByDate:
+                    folderToCreate = Path.Combine(FilesConnectionSent, dateTime.ToString("yyyy-MM-dd"));
+                    return folderToCreate;
+
+                case GroupingOptions.GroupByDateAndHour:
+                    folderToCreate = Path.Combine(FilesConnectionSent, dateTime.ToString("yyyy-MM-dd HH") + "00");
+                    return folderToCreate;
+
+                case GroupingOptions.NoGrouping:
+                default:
+                    return FilesConnectionSent;
+            }
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(folderToCreate))
+                if (!Directory.Exists(folderToCreate)) Directory.CreateDirectory(folderToCreate);
+        }
+    }
 }

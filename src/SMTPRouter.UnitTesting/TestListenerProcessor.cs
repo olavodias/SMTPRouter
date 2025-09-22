@@ -8,7 +8,7 @@ namespace SMTPRouter.UnitTesting
 {
     [TestClass]
     [DoNotParallelize]
-    public sealed class TestListener
+    public sealed class TestListenerProcessor
     {
         public static string RootFolder { get; } = Path.Combine(Directory.GetCurrentDirectory(), "SMTPRouterTesting");
 
@@ -184,8 +184,8 @@ namespace SMTPRouter.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Sends the Email
-                SendEmail();
+                // Sends the Email (it should throw an exception)
+                Assert.ThrowsException<SmtpCommandException>(() => SendEmail());
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();
@@ -219,8 +219,8 @@ namespace SMTPRouter.UnitTesting
                 // Wait a few seconds before trying to send an email
                 Task.Delay(1000, cts.Token).Wait();
 
-                // Sends the Email
-                SendEmail();
+                // Sends the Email (it should throw an exception)
+                Assert.ThrowsException<SmtpCommandException>(() => SendEmail());
 
                 // Wait a few seconds to check for intercepted messages
                 Task.Delay(2000, cts.Token).Wait();

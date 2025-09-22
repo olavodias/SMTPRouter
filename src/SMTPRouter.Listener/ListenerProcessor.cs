@@ -52,12 +52,6 @@ namespace SMTPRouter
             if (string.IsNullOrEmpty(_hosting?.Path))
                 throw new InvalidOperationException("Property \"Path\" not defined");
 
-            // Setup Paths
-            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES));
-            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_REJECTED));
-            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_RECEIVED));
-            //CreateDirectory(Path.Combine(_hosting.Path, Folders.FILES, Folders.FILES_LISTENER_ERRORS));
-
             // Setup the MessageStore
             var smtpMessageStore = new SmtpMessageStore(Path.Combine(_hosting.Path, Folders.FILES));
             smtpMessageStore.MessageReceived += SmtpMessageStore_MessageReceived;
@@ -109,12 +103,6 @@ namespace SMTPRouter
         private void SmtpMailboxFilters_MessageFiltered(object? sender, MessageFilteredEventArgs e)
         {
             _logger?.LogWarning(LoggingEvents.UnauthorizedOrigin, "An unauthorized source is trying to relay emails. Sender is \"{from}\"; IP Address is \"{currentOrigin}\"; Size is \"{size}\";", e.MailFrom, e.OriginIPAddress, e.Size);
-        }
-
-        private static void CreateDirectory(string directory)
-        {
-            if (!Directory.Exists(directory))
-                Directory.CreateDirectory(directory);
         }
 
         private void SmtpMessageStore_MessageReceived(object? sender, MessageEventArgs e)

@@ -12,7 +12,7 @@ public sealed class MailFromDomainRoutingRule : IRoutingRule
     /// <summary>
     /// The Domain to match
     /// </summary>
-    public string Domain { get; set; } = string.Empty;
+    public string? Domain { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MailFromDomainRoutingRule"/> class

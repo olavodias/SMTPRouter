@@ -25,6 +25,11 @@ public static class LoggingEvents
     /// </summary>
     public static EventId MessageReceivedWithErrors = new(1001, nameof(MessageReceivedWithErrors));
 
+    /// <summary>
+    /// There was a IO error. Either a file could not be located, or moved, or deleted
+    /// </summary>
+    public static EventId FileIOError = new(1002, nameof(FileIOError));
+
     // **********************************************************************
     // Routing Events
     // **********************************************************************

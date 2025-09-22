@@ -20,18 +20,18 @@ public sealed class RouterProcessor : IProcessor
     // **********************************************************************
 
     private readonly ILogger<RouterProcessor>? _logger;
-    private readonly RouterSetup? _routerSetup;
-    private readonly Folders? _folders;
+    internal readonly RouterSetup? _routerSetup;
+    internal readonly Folders? _folders;
 
-    private readonly Dictionary<string, RoutingConnection> Connections = [];
-    private readonly Dictionary<string, IRoutingRule> RoutingRules = [];
+    internal readonly Dictionary<string, RoutingConnection> Connections = [];
+    internal readonly Dictionary<string, IRoutingRule> RoutingRules = [];
 
     private readonly SemaphoreSlim _folderLockSemaphore = new(1, 1);
 
     // **********************************************************************
     // Routing Thread Count Management
     // **********************************************************************
-    
+
     /// <summary>
     /// The maximum number of active threads routing messages
     /// </summary>
@@ -39,14 +39,14 @@ public sealed class RouterProcessor : IProcessor
     public int MaxThreadCount { get; }
 
     private readonly object _threadCountLock = new();
-    private uint _threadCount = 0;
+    private byte _threadCount = 0;
 
     /// <summary>
     /// The number of threads actively running
     /// </summary>
     /// <remarks>It is expected that this value will match the value of <see cref="MaxThreadCount"/></remarks>
-    public uint ActiveThreadCount => _threadCount;
-    
+    public byte ActiveThreadCount => _threadCount;
+
     /// <summary>
     /// Increments the number of active threads
     /// </summary>
@@ -88,10 +88,10 @@ public sealed class RouterProcessor : IProcessor
 
         // Setup Routing Threads (minimum 1, maximum 10)
         _routerSetup ??= new RouterSetup()
-            {
-                Path = AppContext.BaseDirectory,
-                RoutingActiveThreads = 4,
-            };
+        {
+            Path = AppContext.BaseDirectory,
+            RoutingActiveThreads = 4,
+        };
 
         if (_routerSetup.RoutingActiveThreads < 1) MaxThreadCount = 1;
         else if (_routerSetup.RoutingActiveThreads > 10) MaxThreadCount = 10;
@@ -123,6 +123,7 @@ public sealed class RouterProcessor : IProcessor
             RoutingRules.Add(r.Key, RuleFactory.Create(r.Value));
     }
 
+    /// <inheritdoc/>
     public async Task DoWorkAsync(CancellationToken stoppingToken)
     {
         // The routing process consists in reading a message from the "Received" Folder,
@@ -133,24 +134,25 @@ public sealed class RouterProcessor : IProcessor
         // If there is no match, move it to the "Errors" folder.
 
         // Each connection will be responsible from processing it from the "InQueue" onwards.
-
-        SetupConnections();
-        SetupRoutingRules();
-
-        var activeTasks = new List<Task>();
-
-        // Add Routing Tasks
-        for (int i = 0; i < MaxThreadCount; i++)
-            activeTasks.Add(RouteNextMessageAsync(stoppingToken));
-
-        // Add Connection Processor
-        foreach (var c in Connections)
+        // The connection processing happens in a different class.
+        try
         {
-            var connectionProcessor = new ConnectionProcessor(_logger, c.Value);
-            activeTasks.Add(connectionProcessor.DoWorkAsync(stoppingToken));
-        }
+            SetupConnections();
+            SetupRoutingRules();
 
-        await Task.WhenAll(activeTasks).ConfigureAwait(false);
+            var activeTasks = new List<Task>();
+
+            // Add Routing Tasks
+            for (int i = 0; i < MaxThreadCount; i++)
+                activeTasks.Add(RouteNextMessageAsync(stoppingToken));
+
+            await Task.WhenAll(activeTasks).ConfigureAwait(false);
+        }
+        catch (Exception e)
+        {
+            // Log Error
+            _logger?.LogError(LoggingEvents.RoutingErrors, e, "General error in the \"{className}.{functionName}\" method", nameof(RouterProcessor), nameof(DoWorkAsync));
+        }
     }
 
     // **********************************************************************
@@ -211,8 +213,8 @@ public sealed class RouterProcessor : IProcessor
                         // Move Unroutable file to the error folder
                         if (!string.IsNullOrWhiteSpace(e.FileToRoute))
                         {
-                            File.Move(Path.Combine(_folders.FilesRouterRouting, e.FileToRoute),
-                                      Path.Combine(_folders.FilesRouterError, e.FileToRoute));
+                            MultiAttemptHelper.FileMove(Path.Combine(_folders.FilesRouterRouting, e.FileToRoute),
+                                                        Path.Combine(_folders.FilesRouterError, e.FileToRoute));
                         }
                     }
                     catch (Exception e1)
@@ -242,7 +244,7 @@ public sealed class RouterProcessor : IProcessor
         catch (Exception e)
         {
             // Log the error and leave
-            _logger?.LogError(LoggingEvents.RoutingErrors, e, "An error ocurred in the \"{taskName}\" (Thread ID {taskId}) causing it to finish unexpectedly", nameof(RouteNextMessageAsync), Task.CurrentId);            
+            _logger?.LogError(LoggingEvents.RoutingErrors, e, "An error ocurred in the \"{taskName}\" (Thread ID {taskId}) causing it to finish unexpectedly", nameof(RouteNextMessageAsync), Task.CurrentId);
         }
         finally
         {
@@ -271,12 +273,12 @@ public sealed class RouterProcessor : IProcessor
             stoppingToken.ThrowIfCancellationRequested();
 
             // Get the first file from the directory
-            var fileToRoute = Directory.EnumerateFiles(_folders.FilesListenerReceived, "*.eml").FirstOrDefault() ?? 
+            var fileToRoute = Directory.EnumerateFiles(_folders.FilesListenerReceived, "*.eml").FirstOrDefault() ??
                               throw new UnableToRetrieveMessageToRouteException($"The folder \"{_folders.FilesListenerReceived}\" is empty");
 
             // Move it to the Routing Folder
             var fileToRouteInfo = new FileInfo(fileToRoute);
-            File.Move(fileToRoute, Path.Combine(_folders.FilesRouterRouting, fileToRouteInfo.Name));
+            MultiAttemptHelper.FileMove(fileToRoute, Path.Combine(_folders.FilesRouterRouting, fileToRouteInfo.Name));
 
             return fileToRouteInfo.Name;
         }
@@ -329,15 +331,15 @@ public sealed class RouterProcessor : IProcessor
                     if (!_routerSetup.Rules.TryGetValue(r.Key, out var rule))
                         throw new KeyNotFoundException($"A Rule Definition with key \"{r.Key}\" could not be located under the Router Setup Rules");
 
-                    if (string.IsNullOrWhiteSpace(rule.ConnectionKey)) 
+                    if (string.IsNullOrWhiteSpace(rule.ConnectionKey))
                         throw new NullReferenceException($"The connect \"{r.Key}\" is setup with an null or blank connection key");
 
                     if (!Connections.TryGetValue(rule.ConnectionKey, out var connection))
                         throw new NullReferenceException($"The connect \"{r.Key}\" uses connection \"{rule.ConnectionKey}\", which could not be located");
 
                     // Move File to the InQueue folder of the given connection
-                    File.Move(fileToRouteFullPath,
-                              Path.Combine(connection.Folders.FilesConnectionInQueue, fileToRouteNameOnly));
+                    MultiAttemptHelper.FileMove(fileToRouteFullPath,
+                                                Path.Combine(connection.Folders.FilesConnectionInQueue, fileToRouteNameOnly));
 
                     // Finalize Function execution
                     return;

@@ -1,20 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>dotnet-SMTPRouter.Router-d48406ef-bfa5-4355-b1dc-beaed5afc106</UserSecretsId>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>dotnet-SMTPRouter.Router-d48406ef-bfa5-4355-b1dc-beaed5afc106</UserSecretsId>
+		<PublishSingleFile>true</PublishSingleFile>
 
-  <ItemGroup>
-    <PackageReference Include="MailKit" Version="4.13.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.9" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.9" />
-  </ItemGroup>
+		<!-- Package Info -->
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<PackageId>SMTPRouter.Router</PackageId>
+		<Version>3.0.0-preview.2</Version>
+		<Title>SMTP Router Routing Service</Title>
+		<Authors>Olavo Henrique Dias</Authors>
+		<Company>Olavo Henrique Dias</Company>
+		<Product>SMTPRouter.Router</Product>
+		<Description>Forward messages to the proper SMTP</Description>
+		<Summary>Forward messages to the proper SMTP</Summary>
+		<Copyright>Copyright © Olavo Henrique Dias 2025</Copyright>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageTags>SMTP Router Listener</PackageTags>
+		<PackageReadmeFile>README.MD</PackageReadmeFile>
+		<PackageIcon>packageIcon.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<RootNamespace>SMTPRouter</RootNamespace>
+		<AssemblyName>SMTPRouter.Router</AssemblyName>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
-  </ItemGroup>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.13.0" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.9" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
+	</ItemGroup>
 </Project>

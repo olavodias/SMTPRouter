@@ -17,6 +17,8 @@ public sealed class ConnectionProcessor: IProcessor
     private readonly ILogger? _logger;
     private readonly RoutingConnection _routingConnection;
 
+    private readonly SmtpClient _client;
+
     private readonly SemaphoreSlim _folderLockSemaphore = new(1, 1);
 
     // **********************************************************************
@@ -26,16 +28,17 @@ public sealed class ConnectionProcessor: IProcessor
     /// <summary>
     /// The maximum number of active threads sending emails for the given connection
     /// </summary>
-    public ushort MaxThreadCount { get; }
+    /// <remarks>The system limits it to 10</remarks>
+    public byte MaxThreadCount { get; }
 
     private readonly object _threadCountLock = new();
-    private ushort _threadCount = 0;
+    private byte _threadCount = 0;
 
     /// <summary>
     /// The number of threads actively running
     /// </summary>
     /// <remarks>It is expected that this value will match the value of <see cref="MaxThreadCount"/></remarks>
-    public ushort ActiveThreadCount => _threadCount;
+    public byte ActiveThreadCount => _threadCount;
 
     /// <summary>
     /// Increments the number of active threads
@@ -63,27 +66,50 @@ public sealed class ConnectionProcessor: IProcessor
     // Constructors
     // **********************************************************************
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectionProcessor"/> class
+    /// </summary>
+    /// <param name="logger">The Logger</param>
+    /// <param name="routingConnection">The Routing Connection</param>
     public ConnectionProcessor(ILogger? logger, RoutingConnection routingConnection)
     {
         // Setup Readonly Properties
         _logger = logger;
         _routingConnection = routingConnection;
 
-        MaxThreadCount = Convert.ToUInt16(routingConnection.ConnectionInfo.ActiveConnections);
+        MaxThreadCount = Convert.ToByte(routingConnection.ConnectionInfo.ActiveConnections);
+
+        if (MaxThreadCount <= 0) MaxThreadCount = 1;
+        else if (MaxThreadCount > 10) MaxThreadCount = 10;
+
+        // Creat the Reusable Client
+        _client = new();
     }
 
+    /// <inheritdoc/>
     public async Task DoWorkAsync(CancellationToken stoppingToken)
     {
         // The Connection Processor consists in reading a message from the "InQueue" folder,
         // move it to the "Sending" folder, and attempt to send it.
 
-        var activeTasks = new List<Task>();
+        // Create the Reusable SmtpClient
+        try
+        {
+            var activeTasks = new List<Task>();
 
-        // Add emailing tasks
-        for (int i = 0; i < _routingConnection.ConnectionInfo.ActiveConnections; i++)
-            activeTasks.Add(EmailNextMessageAsync(stoppingToken));
+            // Add emailing tasks
+            for (int i = 0; i < _routingConnection.ConnectionInfo.ActiveConnections; i++)
+                activeTasks.Add(EmailNextMessageAsync(stoppingToken));
 
-        await Task.WhenAll(activeTasks).ConfigureAwait(false);
+            await Task.WhenAll(activeTasks).ConfigureAwait(false);
+
+        }
+        catch (Exception e)
+        {
+            // Log Exception
+            _logger?.LogError(LoggingEvents.FileIOError, e, "General Error on the \"{class}.{method}\"", nameof(ConnectionProcessor), nameof(DoWorkAsync));
+        }
+
     }
 
     // **********************************************************************
@@ -101,8 +127,12 @@ public sealed class ConnectionProcessor: IProcessor
         IncrementActiveThreadCount();
         _logger?.LogInformation("A new thread of the \"{taskName}\" was created. Total active threads now is {count}. Maximum is {countmax}.", nameof(EmailNextMessageAsync), ActiveThreadCount, MaxThreadCount);
 
+        // Create a client for the given thread
+        var client = new SmtpClient();
+
         try
         {
+
             // Keep looping until a cancellation is requested
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -110,17 +140,15 @@ public sealed class ConnectionProcessor: IProcessor
                 try
                 {
                     // Get the next file to process (automatically move to the routing folder, if a file was found)
-                    var fileToRoute = await GetNextFileNameAsync(stoppingToken);
-                    _logger?.LogTrace("File \"{fileToRoute}\" is being processed", fileToRoute);
+                    var fileToSend = await GetNextFileNameAsync(stoppingToken);
+                    _logger?.LogTrace("File \"{fileToSend}\" is being processed", fileToSend);
 
                     // Load Message from file
-                    var message = SmtpMessage.LoadFile(Path.Combine(_routingConnection.Folders.FilesConnectionSending, fileToRoute));
-                    _logger?.LogTrace("File \"{fileToRoute}\" was sucessfully converted into a SmtpMessage", fileToRoute);
+                    var message = SmtpMessage.LoadFile(Path.Combine(_routingConnection.Folders.FilesConnectionSending, fileToSend));
+                    _logger?.LogTrace("File \"{fileToSend}\" was sucessfully converted into a SmtpMessage", fileToSend);
 
                     // Send Message
-                    SendMessageAsync(message);
-                    //TODO: Implement Method
-
+                    await SendMessageAsync(client, fileToSend, message);
                 }
                 catch (OperationCanceledException)
                 {
@@ -141,8 +169,8 @@ public sealed class ConnectionProcessor: IProcessor
                         // Move the unsent file to the error folder
                         if (!string.IsNullOrEmpty(e.FileToSend))
                         {
-                            File.Move(Path.Combine(_routingConnection.Folders.FilesConnectionSending, e.FileToSend),
-                                      Path.Combine(_routingConnection.Folders.FilesConnectionErrors, e.FileToSend));
+                            MultiAttemptHelper.FileMove(Path.Combine(_routingConnection.Folders.FilesConnectionSending, e.FileToSend),
+                                                        Path.Combine(_routingConnection.Folders.FilesConnectionErrors, e.FileToSend));
                         }
                     }
                     catch (Exception e1)
@@ -177,6 +205,7 @@ public sealed class ConnectionProcessor: IProcessor
         }
         finally
         {
+            client?.Dispose();
             DecrementActiveThreadCount();
             _logger?.LogInformation("A thread of the \"{taskName}\" was ended. Total active threads now is {count}. Maximum is {countmax}.", nameof(EmailNextMessageAsync), ActiveThreadCount, MaxThreadCount);
         }
@@ -204,7 +233,8 @@ public sealed class ConnectionProcessor: IProcessor
 
             // Move it to the Routing Folder
             var fileToRouteInfo = new FileInfo(fileToRoute);
-            File.Move(fileToRoute, Path.Combine(_routingConnection.Folders.FilesConnectionSending, fileToRouteInfo.Name));
+            MultiAttemptHelper.FileMove(fileToRoute, 
+                                        Path.Combine(_routingConnection.Folders.FilesConnectionSending, fileToRouteInfo.Name));
 
             return fileToRouteInfo.Name;
         }
@@ -227,43 +257,70 @@ public sealed class ConnectionProcessor: IProcessor
         }
     }
 
-    private async Task SendMessageAsync(SmtpMessage message)
+    /// <summary>
+    /// Sends the message thru the destination SMTP
+    /// </summary>
+    /// <remarks>Up to 10 attemps are made, based on the connection configuration</remarks>
+    /// <param name="client">The reusable client</param>
+    /// <param name="fileToSendNameOnly">Name of the file to be send (without the full path)</param>
+    /// <param name="message">The message to be sent</param>
+    /// <returns></returns>
+    /// <exception cref="UnableToSendMessageException">Thrown when the system could not send the email after the maximum attempts</exception>
+    private async Task SendMessageAsync(SmtpClient client, string fileToSendNameOnly, SmtpMessage message)
     {
-        var currentAttempt = 1;
+        var currentAttempt = 0;
 
-        while (currentAttempt <= _routingConnection.ConnectionInfo.MaximumRetryAttempts)
+        while (currentAttempt <= _routingConnection.MaximumRetryAttempts)
         {
+            // Increment Count
+            currentAttempt++;
+
             try
             {
-                using var client = new SmtpClient();
-                await client.ConnectAsync(_routingConnection.ConnectionInfo.Host, _routingConnection.ConnectionInfo.Port, MailKit.Security.SecureSocketOptions.Auto);
-
+                // Loads the message contents
                 using var mimeMessage = MimeKit.MimeMessage.Load(message.GetContentsAsStream());
-                
-                mimeMessage.From.Add(new MailboxAddress(message.MailFrom?.ToString(), message.MailFrom?.ToString()));
 
                 var recipients = new List<MailboxAddress>();
                 foreach (var mTo in message.Recipients)
                     recipients.Add(new MailboxAddress(mTo.ToString(), mTo?.ToString()));
 
+                // Connects to the SMTP
+                if (!client.IsConnected)
+                {
+                    await client.ConnectAsync(_routingConnection.ConnectionInfo.Host, _routingConnection.ConnectionInfo.Port, (MailKit.Security.SecureSocketOptions)_routingConnection.ConnectionInfo.SecureSocketOption);
+                }
+
+                // Sends the message thru the final SMTP
                 await client.SendAsync(mimeMessage,
                                        new MailboxAddress(message.MailFrom?.ToString(), message.MailFrom?.ToString()), 
                                        recipients);
-                
-                // Move to Sent Folder
-                //TODO: CONTINUE FROM HERE
 
+                // Move file to Sent folder (based on the grouping options)
+                try
+                {
+                    MultiAttemptHelper.FileMove(Path.Combine(_routingConnection.Folders.FilesConnectionSending, fileToSendNameOnly),
+                                                Path.Combine(_routingConnection.Folders.GetSentFolderWithGrouping(_routingConnection.ConnectionInfo.GroupingOption, DateTime.Now), fileToSendNameOnly));
+                }
+                catch (Exception e)
+                {
+                    // Log the attempt
+                    _logger?.LogError(LoggingEvents.FileIOError, e, "Unable to move message \"{fileToSend}\" to the proper sent folder", fileToSendNameOnly);
+                }
+
+                // Exit the loop, since no errors happened
+                break;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                // When it reaches the limit, throws the exception and leaves the function
+                if (currentAttempt >= _routingConnection.MaximumRetryAttempts)
+                {
+                    // Log the attempt
+                    _logger?.LogError(LoggingEvents.UnableToSendMessage, e, "Unable to send message \"{fileToSend}\". Attempt {attempt} of {maxAttemps}", fileToSendNameOnly, currentAttempt, _routingConnection.MaximumRetryAttempts);
 
-                throw;
+                    throw new UnableToSendMessageException(message, fileToSendNameOnly, e);
+                }
             }
-
-            // Increment Count
-            currentAttempt++;
         }
-
     }
-
 }
