@@ -22,7 +22,12 @@ public sealed class MailFromDomainRoutingRule : IRoutingRule
         
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Checks whether the domain specified on the <<see cref="SmtpMessage.MailFrom"/> matches the domain informed in the <see cref="Domain"/> property
+    /// </summary>
+    /// <remarks>The verification is case insensitive</remarks>
+    /// <param name="message">The message to verify</param>
+    /// <returns>A boolean to define whether the rule matches or not</returns>
     public bool Match(SmtpMessage message)
     {
         try
@@ -31,7 +36,7 @@ public sealed class MailFromDomainRoutingRule : IRoutingRule
             if (message.MailFrom.Host is null) return false;
             if (string.IsNullOrWhiteSpace(Domain)) return false;
 
-            return message.MailFrom.Host.Equals(Domain);
+            return message.MailFrom.Host.Equals(Domain, StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception)
         {
