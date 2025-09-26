@@ -10,7 +10,7 @@ namespace SMTPRouter;
 /// Defines the Interface to be implemented by processes
 /// </summary>
 /// <remarks>Use it for the Background Services, to make them more unit testable</remarks>
-internal interface IProcessor
+public interface IProcessor
 {
     /// <summary>
     /// Perform the Asynchronous Wort

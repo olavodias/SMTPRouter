@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>10.0</LangVersion>
+		<Nullable>enable</Nullable>
+
+		<!-- Nuget Package Info -->
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageId>SMTPRouter.Core</PackageId>
+		<Version>3.0.0</Version>
+		<Title>SMTP Router Service Core Components</Title>
+		<Authors>Olavo Henrique Dias</Authors>
+		<Company>Olavo Henrique Dias</Company>
+		<Product>SMTPRouter.Core</Product>
+		<Description>Core Implementation of the SMTP Routing Component</Description>
+		<Summary>Core Implementation of the SMTP Routing Component</Summary>
+		<Copyright>Copyright © Olavo Henrique Dias 2025</Copyright>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<PackageTags>SMTP Router Core Component</PackageTags>
+		<PackageReadmeFile>README.MD</PackageReadmeFile>
+		<PackageIcon>packageIcon.png</PackageIcon>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<RootNamespace>SMTPRouter.Core</RootNamespace>
+		<AssemblyName>SMTPRouter.Core</AssemblyName>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<!-- Add Special Files to the Output Folder, for the Nuget Package Creation -->
+	<ItemGroup>
+		<None Include="packageIcon.png" Pack="True" PackagePath="\" />
+		<None Include="../../LICENSE" Pack="true" PackagePath="\" />
+		<None Include="../../README.MD" Pack="true" PackagePath="\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
+	</ItemGroup>
+
+	<!-- Packages -->
+	<ItemGroup>
+		<PackageReference Include="MailKit" Version="4.13.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
+		<PackageReference Include="SmtpServer" Version="11.0.0" />
+	</ItemGroup>
+
+</Project>

@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using SMTPRouter.ConfigurationSchema;
 using SmtpServer;
 using SmtpServer.ComponentModel;
 using System;

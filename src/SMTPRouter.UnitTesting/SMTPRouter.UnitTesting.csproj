@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SMTPRouter.Abstractions\SMTPRouter.Abstractions.csproj" />
+    <ProjectReference Include="..\SMTPRouter.Core\SMTPRouter.Core.csproj" />
     <ProjectReference Include="..\SMTPRouter.Listener\SMTPRouter.Listener.csproj" />
     <ProjectReference Include="..\SMTPRouter.Router\SMTPRouter.Router.csproj" />
   </ItemGroup>

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
-using SMTPRouter;
-using SMTPRouter.ConfigurationSchema;
+using SMTPRouter.Core;
+using SMTPRouter.Core.ConfigurationSchema;
 using SMTPRouter.Router;
 using System.Reflection;
 using System.Text;

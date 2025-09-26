@@ -2,7 +2,8 @@
 
 using MimeKit;
 using MailKit.Net.Smtp;
-using SMTPRouter.ConfigurationSchema;
+using SMTPRouter.Core.ConfigurationSchema;
+using SMTPRouter.Core;
 
 namespace SMTPRouter.UnitTesting
 {

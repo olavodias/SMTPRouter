@@ -2,13 +2,14 @@
 
 using MimeKit;
 using MailKit.Net.Smtp;
-using SMTPRouter.ConfigurationSchema;
 using SMTPRouter.Router;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SMTPRouter.Core.ConfigurationSchema;
+using SMTPRouter.Core;
 
 namespace SMTPRouter.UnitTesting;
 
@@ -63,7 +64,7 @@ public sealed class TestConnectionProcessor
         cts = new CancellationTokenSource();
 
         // Setup Main Listener and Activate It
-        ListenerMain = new ListenerProcessor(null, new ConfigurationSchema.Hosting()
+        ListenerMain = new ListenerProcessor(null, new Hosting()
         {
             Server = "localhost",
             Path = Path.Combine(CurrentTestRootFolder, nameof(ListenerMain)),
@@ -76,7 +77,7 @@ public sealed class TestConnectionProcessor
         Task.Run(async () => await ListenerMain.DoWorkAsync(cts.Token));
 
         // Setup Structure for the SMTP01
-        ListenerSMTP01 = new ListenerProcessor(null, new ConfigurationSchema.Hosting()
+        ListenerSMTP01 = new ListenerProcessor(null, new Hosting()
         {
             Server = "localhost",
             Path = Path.Combine(CurrentTestRootFolder, nameof(ListenerSMTP01)),

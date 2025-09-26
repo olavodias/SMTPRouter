@@ -1,3 +1,5 @@
+using SMTPRouter.Core;
+
 namespace SMTPRouter.Router;
 
 public class Worker : BackgroundService
