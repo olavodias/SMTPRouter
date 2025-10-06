@@ -31,14 +31,23 @@ namespace SMTPRouter.Core
         public event EventHandler<MessageErrorEventArgs>? MessageReceivedWithErrors;
 
         /// <summary>
-        /// The Path where the listener will store messages
+        /// The Root Path where the listener will store messages
         /// </summary>
         public string StorePhysicalPath { get; set; }
 
+        /// <summary>
+        /// The path where received messages are stored
+        /// </summary>
         public string StorePhysicalPathReceived { get; }
 
+        /// <summary>
+        /// The path where failed messages are stored
+        /// </summary>
         public string StorePhysicalPathErrors { get; }
 
+        /// <summary>
+        /// The path where rejected messages are stored
+        /// </summary>
         public string StorePhysicalPathRejected { get; }
 
         /// <summary>

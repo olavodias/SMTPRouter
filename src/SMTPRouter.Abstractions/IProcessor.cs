@@ -18,5 +18,4 @@ public interface IProcessor
     /// <param name="stoppingToken">The cancellation token to stop the process</param>
     /// <returns></returns>
     Task DoWorkAsync(CancellationToken stoppingToken);
-
 }

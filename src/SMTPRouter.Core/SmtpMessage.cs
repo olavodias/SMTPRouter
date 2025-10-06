@@ -125,7 +125,6 @@ public sealed class SmtpMessage: IMessage
         var fileLocation = FileLocation.Undefined;
 
         // Opens the file
-        
         using (var fileStream = MultiAttemptHelper.FileOpenRead(filename))
         {
             string? line = "";

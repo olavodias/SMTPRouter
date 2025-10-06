@@ -20,9 +20,24 @@ internal sealed class SmtpMailboxFilter : IMailboxFilter
     /// </summary>
     public event EventHandler<MessageFilteredEventArgs>? MessageFiltered;
 
+    /// <summary>
+    /// A list of the IP addresses that can relay messages.
+    /// </summary>
+    /// <remarks>When this list is empty, any ip addresses can relay messages, except those listed at the <see cref="RejectedIPAddresses"/> list.</remarks>
     public List<string> AcceptedIPAddresses { get; private set; }
+    
+    /// <summary>
+    /// A list of the IP addresses that cannot relay messages
+    /// </summary>
+    /// <remarks>When this list is empty, any ip addresses can relay messages, or only the IP addresses at <see cref="AcceptedIPAddresses"/> can relay messages.</remarks>
     public List<string> RejectedIPAddresses { get; private set; }
 
+    /// <summary>
+    /// Initalizes a new instance of the <see cref="SmtpMailboxFilter"/> class
+    /// </summary>
+    /// <param name="acceptedIPAddresses">The IP addresses that are allowed to relay messages</param>
+    /// <param name="rejectedIPAddresses">The IP addresses that are not allowed to relay messages</param>
+    /// <remarks>Only one of the parameters must be informed, as one denies the other.</remarks>
     public SmtpMailboxFilter(string[]? acceptedIPAddresses, string[]? rejectedIPAddresses)
     {
         AcceptedIPAddresses = acceptedIPAddresses is null ? new List<string>() : acceptedIPAddresses.ToList();

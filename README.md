@@ -1,4 +1,4 @@
-# SMTP Router - v3.0.0
+# Smtp Router - v3.0.0
 
 [![nuget](https://img.shields.io/nuget/v/SmtpRouter.Core.svg)](https://www.nuget.org/packages/SmtpRouter.Core/) 
 ![GitHub release](https://img.shields.io/github/release/olavodias/SmtpRouter.svg)
@@ -26,7 +26,19 @@ This components replace the first generation of the Smtp Router project, which c
 ## In this repository
 
 * [SMTP Router Documentation](https://olavodias.github.io/SMTPRouter_v3)
+* [Components](#components)
 * [Change Log](#change-log)
+
+## Components
+
+The following components are in this repository:
+
+| Component | Type | Description |
+| :--- | :-- | :-- |
+| SMTPRouter.Abstractions | Nuget Package | Interfaces to be used when expanding the Smtp Router component |
+| SMTPRouter.Core | Nuget Package | The Implementation of the Smtp Routing Component |
+| SMTPRouter.Listener | Background Service | An implementation of the Smtp Router Core to listen to Smtp Messages |
+| SMTPRouter.Router | Background Service | An implementation of the Smtp Router Core to route Smtp Messages |
 
 ## Change Log
 
