@@ -42,8 +42,10 @@ jobs:
         
         $text = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
         $text = $text -replace $old, $new
+        $text | Set-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj"
 
-        Write-Host $text
+        $text2 = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
+        Write-Host $text2
     
 #    - name: Change Package Version
 #      working-directory: ./src
