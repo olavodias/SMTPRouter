@@ -72,7 +72,13 @@ jobs:
         dotnet pack src/SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj --configuration Release --output $GITHUB_WORKSPACE/out
         dotnet pack src/SMTPRouter.Core/SMTPRouter.Core.csproj --configuration Release --output $GITHUB_WORKSPACE/out
 
+    - name: NuGet Login
+      uses: NuGet/login@v1
+      id: login
+      with:
+        user: 'olavodias'
+
     - name: Push NuGet Packages
       run: |
         cd $GITHUB_WORKSPACE/out
-        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols
+        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols --api-key ${{ steps.login.outputs.NUGET_API_KEY }}
