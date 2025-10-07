@@ -3,9 +3,8 @@ name: Build, Test, and Publish
 on:
   workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
-    branches: [ dev ]
-    #tags:
-    #- 'v*.*.*'
+    tags:
+    - 'v*.*.*'
 
 jobs:
   build:
@@ -24,6 +23,19 @@ jobs:
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
+
+    - name: Restore Dependencies
+      working-directory: ./src
+      run: dotnet restore
+
+    - name: Build
+      working-directory: ./src
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Test
+      working-directory: ./src
+      run: |
+        dotnet test --configuration Release --no-restore --no-build --verbosity normal
 
     - name: Extract Version from Tag
       id: tag
@@ -55,20 +67,12 @@ jobs:
             $text | Set-Content $filename
         }
     
-#    - name: Restore Dependencies
-#      working-directory: ./src
-#      run: dotnet restore
-#    - name: Build
-#      working-directory: ./src
-#      run: dotnet build --configuration Release --no-restore
-#    - name: Test
-#      working-directory: ./src
-#      run: |
-#        dotnet test --configuration Release --no-restore --no-build --verbosity normal
-#    - name: Build Project and Generate NuGet package
-#      run: |
-#        dotnet pack --configuration Release --output $GITHUB_WORKSPACE/out src/SmtpServer/SmtpServer.csproj
-#    - name: Push NuGet Package
-#      run: |
-#        cd $GITHUB_WORKSPACE/out
-#        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols
+    - name: Rebuild and Pack Project
+      run: |
+        dotnet pack src/SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj --configuration Release --output $GITHUB_WORKSPACE/out
+        dotnet pack src/SMTPRouter.Core/SMTPRouter.Core.csproj --configuration Release --output $GITHUB_WORKSPACE/out
+
+    - name: Push NuGet Packages
+      run: |
+        cd $GITHUB_WORKSPACE/out
+        dotnet nuget push *.nupkg --source https://api.nuget.org/v3/index.json --skip-duplicate --no-symbols
