@@ -41,7 +41,7 @@ jobs:
         $new = "<Version>v" + ${{ steps.tag.outputs.result }} + "</Version>"
         
         $text = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
-        $text = $text -replace $old, ${{ steps.tag.outputs.result }}
+        $text = $text -replace $old, $new
 
         Write-Host $text
     
