@@ -39,34 +39,22 @@ jobs:
       working-directory: ./src
       shell: pwsh
       run: |
-        $old = "<Version>3.0.0</Version>"
-        $new = "<Version>v" + ${{ steps.tag.outputs.result }} + "</Version>"
+        $old = "<Version>0.1.0</Version>"
+        $new = "<Version>" + ${{ steps.tag.outputs.result }} + "</Version>"
 
-        $projects = @('SMTPRouter.Abstractions', 'SMTPRouter.Core')
+        $projects = @('SMTPRouter.Abstractions', 'SMTPRouter.Core', 'SMTPRouter.Listener', 'SMTPRouter.Router')
         
         foreach ($project in $projects)
         {
-            Write-Host "Processing" $project
-
             $filename = $project + "/" + $project + ".csproj"
+
+            Write-Host "Changing" $filename "to version" $new
 
             $text = Get-Content $filename -Raw
             $text = $text -replace $old, $new
             $text | Set-Content $filename
-
-            $text2 = Get-Content $filename -Raw
-            Write-Host $text2
         }
-
     
-#    - name: Change Package Version
-#      working-directory: ./src
-#      run: |
-#        sed -i -e "s/<Version>[a-zA-Z0-9.-]*<\/Version>/<Version>${{ steps.tag.outputs.result }}<\/Version>/g" SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj
-#        sed -i -e "s/<Version>[a-zA-Z0-9.-]*<\/Version>/<Version>${{ steps.tag.outputs.result }}<\/Version>/g" SMTPRouter.Core/SMTPRouter.Core.csproj
-#        sed -i -e "s/<Version>[a-zA-Z0-9.-]*<\/Version>/<Version>${{ steps.tag.outputs.result }}<\/Version>/g" SMTPRouter.Listener/SMTPRouter.Listener.csproj
-#        sed -i -e "s/<Version>[a-zA-Z0-9.-]*<\/Version>/<Version>${{ steps.tag.outputs.result }}<\/Version>/g" SMTPRouter.Router/SMTPRouter.Router.csproj
-
 #    - name: Restore Dependencies
 #      working-directory: ./src
 #      run: dotnet restore

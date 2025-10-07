@@ -10,7 +10,7 @@
 		<!-- Package Info -->
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<PackageId>SMTPRouter.Listener</PackageId>
-		<Version>3.0.0-preview.2</Version>
+		<Version>0.1.0</Version>
 		<Title>SMTP Router Listener Service</Title>
 		<Authors>Olavo Henrique Dias</Authors>
 		<Company>Olavo Henrique Dias</Company>
