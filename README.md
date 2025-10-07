@@ -25,9 +25,9 @@ This components replace the first generation of the Smtp Router project, which c
 
 ## In this repository
 
-* [SMTP Router Documentation](https://olavodias.github.io/SMTPRouter_v3)
 * [Components](#components)
 * [Change Log](#change-log)
+* [Upcoming Changes](#upcoming-changes)
 
 ## Components
 
@@ -45,7 +45,7 @@ The following components are in this repository:
 Major Release 3 is not backwards compatible with Major Release 2. The [legacy SmtpRouter Implementation](https://github.com/olavodias/SMTPRouter.Gen1) will still receive modifications, but nothing significant.
 We recommend migrating to Major Release 3.
 
-### Version v3.0.0
+### v3.0.0
 
 * Configuration Files are in JSON Format Now
 * Listener and Router are completely separated
@@ -60,3 +60,14 @@ We recommend migrating to Major Release 3.
 * Added Integrated Testing
 * Added CI/CD Pipeline
 
+## Upcoming Changes
+
+The following changes are expected to be implemented in future versions.
+
+* Automated purge processing to remove older messages and save on disk space
+* Statistics generation
+* Allow the use of custom plug-ins to interact with the services
+* Allow the use of custom routing rules
+* Improve documentation
+
+> Watch the project roadmap to identify when the changes are deployed. Contributions are welcome.
