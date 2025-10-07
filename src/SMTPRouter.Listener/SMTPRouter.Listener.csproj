@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFrameworks>net8.0;net8.0-windows</TargetFrameworks>
 		<LangVersion>10.0</LangVersion>
 		<Nullable>enable</Nullable>
 		<UserSecretsId>dotnet-SMTPRouter.Listener-28caccd7-2eb5-484e-902b-aeaab6f6393b</UserSecretsId>
