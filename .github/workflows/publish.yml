@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    name: Build, Test, and Publish
 
     runs-on: windows-latest
 
@@ -37,7 +38,7 @@ jobs:
       shell: pwsh
       run: |
         $old = "<Version>3.0.0</Version>"
-        $new = "<Version>v${{ steps.tag.outputs.result }}</Version>"
+        $new = "<Version>v" + ${{ steps.tag.outputs.result }} + "</Version>"
         
         $text = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
         $text = $text -replace $old, ${{ steps.tag.outputs.result }}
