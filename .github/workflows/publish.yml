@@ -36,7 +36,7 @@ jobs:
       working-directory: ./src
       shell: pwsh
       run: |
-        $old = "<Version>v3.0.0</Version>"
+        $old = "<Version>3.0.0</Version>"
         
         $text = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
         $text = $text -replace $old, ${{ steps.tag.outputs.result }}
