@@ -1,4 +1,4 @@
-# Smtp Router - v3.0.0
+# Smtp Router
 
 [![nuget](https://img.shields.io/nuget/v/SmtpRouter.Core.svg)](https://www.nuget.org/packages/SmtpRouter.Core/) 
 ![GitHub release](https://img.shields.io/github/release/olavodias/SmtpRouter.svg)

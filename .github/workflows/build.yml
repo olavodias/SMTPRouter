@@ -1,0 +1,39 @@
+name: Build and Test
+
+on:
+  workflow_dispatch: # Allow running the workflow manually from the GitHub UI
+  push:
+    paths:
+    - 'src/**'
+    - '.github/workflows/**'
+    branches: [ dev, master, release/** ]
+  pull_request:
+    paths:
+    - 'src/**'
+    - '.github/workflows/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      #packages: write
+
+    steps:
+    - uses: actions/checkout@v5
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 8.0.x
+    - name: Restore dependencies
+      working-directory: ./src
+      run: dotnet restore
+    - name: Build
+      working-directory: ./src
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      working-directory: ./src
+      run: |
+        dotnet test --configuration Release --no-restore --no-build --verbosity normal
