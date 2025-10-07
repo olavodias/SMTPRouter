@@ -3,8 +3,9 @@ name: Build, Test, and Publish
 on:
   workflow_dispatch: # Allow running the workflow manually from the GitHub UI
   push:
-    tags:
-    - 'v*.*.*'
+    branches: [ dev ]
+    #tags:
+    #- 'v*.*.*'
 
 jobs:
   build:
@@ -31,6 +32,17 @@ jobs:
     - name: Print Results
       run: echo ${{ steps.tag.outputs.result }}
 
+    - name: Change Package Version
+      working-directory: ./src
+      shell: pwsh
+      run: |
+        $old = "<Version>v3.0.0</Version>"
+        
+        $text = Get-Content "SMTPRouter.Abstractions/SMTPRouter.Abstractions.csproj" -Raw
+        $text = $text -replace $old, ${{ steps.tag.outputs.result }}
+
+        Write-Host $text
+    
 #    - name: Change Package Version
 #      working-directory: ./src
 #      run: |
