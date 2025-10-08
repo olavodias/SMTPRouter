@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using WixSharp;
 using WixSharp.Forms;
+using IO = System.IO;
 
 namespace SMTPRouter.Win.Installer
 {
@@ -15,24 +16,45 @@ namespace SMTPRouter.Win.Installer
             var buildConfiguration = "Release";
 #endif
 
-            var buildOutputDirectory = Environment.CurrentDirectory;
+            buildConfiguration = "Release";
+            var buildPlatform = "net8.0-windows";
 
-            var listenerBinaries = new Feature("Listener", "SMTP Message Listener", true, false);
-            var routerBinaries = new Feature("Router", "SMTP Message Router", true, false);
-            var managementBinaries = new Feature("Service Manager", "Manage Services", true, true);
+            // Look for parent directory
+            var directoryInfo = new IO.DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
 
-            
+            while (!directoryInfo.Name.Equals("src", StringComparison.OrdinalIgnoreCase))
+            {
+                directoryInfo = directoryInfo.Parent;
+            }
 
+            if (directoryInfo == null)
+                return;
 
-            var project = new ManagedProject("SMTPRouter", 
-                                             new Dir(@"%ProgramFiles%\SMTPRouter",
-                                             
-                                             new File("Program.cs")));
+            // Build Output Directory
+            var servicesFeature = new Feature("Services", "Application Services", true, false);
+
+            var listenerBinariesFeature = new Feature("Listener", "Smtp Message Listener\n\nListen to Smtp messages and store them in the file system", true, false);
+            var listenerBinariesPath = IO.Path.Combine(directoryInfo.FullName, "SMTPRouter.Listener", "bin", buildConfiguration, buildPlatform, "publish", "win-x64");
+
+            var routerBinariesFeature = new Feature("Router", "Smtp Message Router\n\nProcess received messages and forward them to a different Smtp Server", true, false);
+            var routerBinariesPath = IO.Path.Combine(directoryInfo.FullName, "SMTPRouter.Router", "bin", buildConfiguration, buildPlatform, "publish", "win-x64");
+
+            var managementBinariesFeature = new Feature("Service Manager", "Manage Services", true, true);
+
+            servicesFeature.Add(listenerBinariesFeature);
+            servicesFeature.Add(routerBinariesFeature);
+
+            var project = new ManagedProject("SMTPRouter", new Dir(@"%ProgramFiles%\SMTPRouter", new DirFiles(listenerBinariesFeature, listenerBinariesPath),
+                                                                                                 new DirFiles(routerBinariesFeature, routerBinariesPath))
+                                             );
 
             project.GUID = new Guid("71237eb0-8802-4f93-967a-440b1db089bb");
 
             project.ManagedUI = ManagedUI.Empty;    //no standard UI dialogs
             project.ManagedUI = ManagedUI.Default;  //all standard UI dialogs
+
+            project.UI = WUI.WixUI_FeatureTree;
+            project.DefaultFeature = servicesFeature;
 
             //custom set of standard UI dialogs
             project.ManagedUI = new ManagedUI();
@@ -54,8 +76,9 @@ namespace SMTPRouter.Win.Installer
             project.BeforeInstall += Msi_BeforeInstall;
             project.AfterInstall += Msi_AfterInstall;
 
-            project.SourceBaseDir = "<input dir path>";
-            //project.OutDir = "<output dir path>";
+
+            //project.SourceBaseDir = "<input dir path>";
+            project.OutDir = IO.Path.Combine(directoryInfo.FullName, "SMTPRouter.Win.Installer", "msi");
 
             project.BuildMsi();
         }
