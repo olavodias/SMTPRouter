@@ -1,26 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
-    <RootNamespace>WixSharp</RootNamespace>
-  </PropertyGroup>
-  
-  <ItemGroup>
-    <None Remove="*.msi" />
-    <None Remove="*.exe" />
-    <None Remove="*.wxs" />
-    <None Remove="*.wixpdb" />
-    <None Remove="*.wixobj" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net472</TargetFramework>
+		<RootNamespace>WixSharp</RootNamespace>
+		<Version>0.1.0</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="WixSharp_wix4" Version="2.6.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="*.msi" />
+		<None Remove="*.exe" />
+		<None Remove="*.wxs" />
+		<None Remove="*.wixpdb" />
+		<None Remove="*.wixobj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WixSharp_wix4" Version="2.6.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="System.Windows.Forms" />
+	</ItemGroup>
 
 	<!--
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

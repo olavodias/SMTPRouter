@@ -69,5 +69,7 @@ The following changes are expected to be implemented in future versions.
 * Allow the use of custom plug-ins to interact with the services
 * Allow the use of custom routing rules
 * Improve documentation
+* Implement for ARM64 Architecture
+* Implement a Service Manager Application for Windows
 
 > Watch the project roadmap to identify when the changes are deployed. Contributions are welcome.

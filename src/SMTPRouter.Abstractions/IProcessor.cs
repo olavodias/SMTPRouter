@@ -13,7 +13,7 @@ namespace SMTPRouter;
 public interface IProcessor
 {
     /// <summary>
-    /// Perform the Asynchronous Wort
+    /// Perform the Asynchronous Work
     /// </summary>
     /// <param name="stoppingToken">The cancellation token to stop the process</param>
     /// <returns></returns>
