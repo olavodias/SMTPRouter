@@ -1,0 +1,178 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Compressed="yes" ProductCode="71237eb0-8802-4f93-967a-440b1dc089bc" Name="SMTPRouter" Language="1033" Version="0.1.0.0" UpgradeCode="71237eb0-8802-4f93-967a-440b1db089bb" Manufacturer="olavo.dias" InstallerVersion="200">
+    <SummaryInformation Codepage="Windows-1252" />
+    <Media Id="1" Cabinet="SMTPRouter.cab" EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="INSTALLDIR" Name="SMTPRouter">
+
+        <Component Id="Component.SMTPRouter.Listener.exe_3879363593" Guid="71237eb0-8802-4f93-967a-440bb73ebc6a">
+          <File Id="SMTPRouter.Listener.exe_3879363593" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Listener.exe" />
+
+          <ServiceInstall Id="SMTPRouter.Listener" Name="SMTPRouter.Listener" DisplayName="SMTPRouter.Listener" Description="SMTPRouter.Listener" Type="ownProcess" Start="auto" ErrorControl="normal">
+            <ServiceConfig DelayedAutoStart="yes" ServiceSid="none" OnInstall="yes" OnReinstall="no" OnUninstall="no" />
+            <ServiceConfig FirstFailureActionType="none" SecondFailureActionType="none" ThirdFailureActionType="none" ProgramCommandLine="SMTPRouter.Listener.exe" xmlns="http://wixtoolset.org/schemas/v4/wxs/util" />
+          </ServiceInstall>
+
+          <ServiceControl Id="StopSMTPRouter.Listener" Name="SMTPRouter.Listener" Stop="both" Wait="yes" />
+          <ServiceControl Id="RemoveSMTPRouter.Listener" Name="SMTPRouter.Listener" Remove="uninstall" Wait="yes" />
+        </Component>
+
+        <Directory Id="Bin" Name="Bin">
+          <Directory Id="ListenerService" Name="ListenerService">
+
+            <Component Id="Component.appsettings.Development.json_3379814545" Guid="71237eb0-8802-4f93-967a-440b43c1d586">
+              <File Id="appsettings.Development.json_3379814545" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\appsettings.Development.json" />
+            </Component>
+
+            <Component Id="Component.appsettings.json_435570962" Guid="71237eb0-8802-4f93-967a-440ba537981d">
+              <File Id="appsettings.json_435570962" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\appsettings.json" />
+            </Component>
+
+            <Component Id="Component.listener.json_2284638231" Guid="71237eb0-8802-4f93-967a-440b8da3dab1">
+              <File Id="listener.json_2284638231" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\listener.json" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Abstractions.pdb_1936671129" Guid="71237eb0-8802-4f93-967a-440b1b365994">
+              <File Id="SMTPRouter.Abstractions.pdb_1936671129" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Abstractions.pdb" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Abstractions.xml_2389744819" Guid="71237eb0-8802-4f93-967a-440bba1b9942">
+              <File Id="SMTPRouter.Abstractions.xml_2389744819" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Abstractions.xml" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Core.pdb_1891917842" Guid="71237eb0-8802-4f93-967a-440b82590354">
+              <File Id="SMTPRouter.Core.pdb_1891917842" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Core.pdb" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Core.xml_1962654508" Guid="71237eb0-8802-4f93-967a-440b424f165c">
+              <File Id="SMTPRouter.Core.xml_1962654508" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Core.xml" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Listener.exe_3801441174" Guid="71237eb0-8802-4f93-967a-440bf3dba29c">
+              <File Id="SMTPRouter.Listener.exe_3801441174" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Listener.exe" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Listener.pdb_1386893166" Guid="71237eb0-8802-4f93-967a-440b7a32b394">
+              <File Id="SMTPRouter.Listener.pdb_1386893166" Source="..\..\..\..\SMTPRouter.Listener\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Listener.pdb" />
+            </Component>
+
+          </Directory>
+        </Directory>
+
+        <Directory Id="Bin.1" Name="Bin">
+          <Directory Id="RouterService" Name="RouterService">
+
+            <Component Id="Component.appsettings.Development.json_3779311049" Guid="71237eb0-8802-4f93-967a-440ba9cc66b5">
+              <File Id="appsettings.Development.json_3779311049" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\appsettings.Development.json" />
+            </Component>
+
+            <Component Id="Component.appsettings.json_2578718621" Guid="71237eb0-8802-4f93-967a-440b4b4f6d29">
+              <File Id="appsettings.json_2578718621" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\appsettings.json" />
+            </Component>
+
+            <Component Id="Component.sample.router.json_172292054" Guid="71237eb0-8802-4f93-967a-440bf4858b3d">
+              <File Id="sample.router.json_172292054" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\sample.router.json" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Abstractions.pdb_3122571909" Guid="71237eb0-8802-4f93-967a-440b3497d51e">
+              <File Id="SMTPRouter.Abstractions.pdb_3122571909" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Abstractions.pdb" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Abstractions.xml_4285830067" Guid="71237eb0-8802-4f93-967a-440be71a7fba">
+              <File Id="SMTPRouter.Abstractions.xml_4285830067" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Abstractions.xml" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Core.pdb_3915124155" Guid="71237eb0-8802-4f93-967a-440bc8f35208">
+              <File Id="SMTPRouter.Core.pdb_3915124155" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Core.pdb" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Core.xml_3464195645" Guid="71237eb0-8802-4f93-967a-440ba2293412">
+              <File Id="SMTPRouter.Core.xml_3464195645" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Core.xml" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Router.exe_859984048" Guid="71237eb0-8802-4f93-967a-440bdabaeef6">
+              <File Id="SMTPRouter.Router.exe_859984048" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Router.exe" />
+            </Component>
+
+            <Component Id="Component.SMTPRouter.Router.pdb_1577603936" Guid="71237eb0-8802-4f93-967a-440ba33e7d44">
+              <File Id="SMTPRouter.Router.pdb_1577603936" Source="..\..\..\..\SMTPRouter.Router\bin\Release\net8.0-windows\publish\win-x64\SMTPRouter.Router.pdb" />
+            </Component>
+
+          </Directory>
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <UI />
+
+    <WixUI Id="WixUI_Minimal" xmlns="http://wixtoolset.org/schemas/v4/wxs/ui" />
+
+    <UI>
+      <EmbeddedUI Id="WixSharp_EmbeddedUI_Asm" SourceFile="..\..\..\msi\win-x64\WixSharp.UI.CA.dll" />
+    </UI>
+
+    <CustomAction Id="WixSharp_InitRuntime_Action" BinaryRef="WixSharp_InitRuntime_Action_File" DllEntry="WixSharp_InitRuntime_Action" Return="check" Execute="immediate" />
+    <CustomAction Id="Set_CancelRequestHandler_Props" Property="CancelRequestHandler" Value="UpgradeCode=[UpgradeCode];INSTALLDIR=[INSTALLDIR];UILevel=[UILevel];ProductCode=[ProductCode];ADDLOCAL=[ADDLOCAL];ADDFEATURES=[ADDFEATURES]" />
+    <CustomAction Id="CancelRequestHandler" BinaryRef="WixSharp_InitRuntime_Action_File" DllEntry="CancelRequestHandler" Return="check" Impersonate="no" Execute="deferred" />
+    <CustomAction Id="WixSharp_Load_Action" BinaryRef="WixSharp_InitRuntime_Action_File" DllEntry="WixSharp_Load_Action" Return="check" Execute="immediate" />
+    <CustomAction Id="WixSharp_BeforeInstall_Action" BinaryRef="WixSharp_InitRuntime_Action_File" DllEntry="WixSharp_BeforeInstall_Action" Return="check" Execute="immediate" />
+    <CustomAction Id="Set_WixSharp_AfterInstall_Action_Props" Property="WixSharp_AfterInstall_Action" Value="WixSharp_AfterInstall_Handlers=[WixSharp_AfterInstall_Handlers];WIXSHARP_RUNTIME_DATA=[WIXSHARP_RUNTIME_DATA];INSTALLDIR=[INSTALLDIR];UILevel=[UILevel];ProductName=[ProductName];FOUNDPREVIOUSVERSION=[FOUNDPREVIOUSVERSION];UpgradeCode=[UpgradeCode];ManagedProjectElevatedEvents=[ManagedProjectElevatedEvents];REMOVE=[REMOVE];REINSTALL=[REINSTALL];Installed=[Installed];MsiLogFileLocation=[MsiLogFileLocation];INSTALLDIR=[INSTALLDIR];UILevel=[UILevel];ProductCode=[ProductCode];ADDLOCAL=[ADDLOCAL];ADDFEATURES=[ADDFEATURES]" />
+    <CustomAction Id="WixSharp_AfterInstall_Action" BinaryRef="WixSharp_InitRuntime_Action_File" DllEntry="WixSharp_AfterInstall_Action" Return="check" Impersonate="no" Execute="deferred" />
+
+    <Binary Id="WixSharp_InitRuntime_Action_File" SourceFile="..\..\..\msi\win-x64\WixSharp.CA.dll" />
+    <Binary Id="WixSharp_UIText" SourceFile="..\..\..\..\..\..\..\..\..\ProgramData\WixSharp\2.6.2.0\WixUI_en-US.wxl" />
+    <Binary Id="WixSharp_LicenceFile" SourceFile="..\..\..\msi\win-x64\SMTPRouter.licence.rtf" />
+    <Binary Id="WixSharpUI_Bmp_Dialog" SourceFile="..\..\..\msi\win-x64\SMTPRouter.dialog_bmp.png" />
+    <Binary Id="WixSharpUI_Bmp_Banner" SourceFile="..\..\..\msi\win-x64\SMTPRouter.dialog_banner.png" />
+
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <Property Id="WixSharp_UI_INSTALLDIR" Value="INSTALLDIR" />
+    <Property Id="UAC_WARNING" Value="Please wait for UAC prompt to appear.&#xD;&#xA;&#xD;&#xA;If it appears minimized then activate it from the taskbar." />
+    <Property Id="WixSharp_InstallDialogs" Value="WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.WelcomeDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.LicenceDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.FeaturesDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.InstallDirDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.ProgressDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.ExitDialog" />
+    <Property Id="WixSharp_ModifyDialogs" Value="WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.MaintenanceTypeDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.FeaturesDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.ProgressDialog&#xA;WixSharp.UI, Version=2.6.2.0, Culture=neutral, PublicKeyToken=13407310932706d5|WixSharp.UI.Forms.ExitDialog" />
+    <Property Id="WixSharp_Load_Handlers" Value="SMTPRouter.Win.Installer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null|SMTPRouter.Win.Installer.Program|Msi_Load" />
+    <Property Id="WixSharp_BeforeInstall_Handlers" Value="SMTPRouter.Win.Installer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null|SMTPRouter.Win.Installer.Program|Msi_BeforeInstall" />
+    <Property Id="WixSharp_AfterInstall_Handlers" Value="SMTPRouter.Win.Installer, Version=0.1.0.0, Culture=neutral, PublicKeyToken=null|SMTPRouter.Win.Installer.Program|Msi_AfterInstall" />
+
+    <Feature Id="Smtp20Message20Listener" Title="Smtp Message Listener" Level="1" Description="Smtp Message Listener&#xA;&#xA;Listen to Smtp messages and store them in the file system" AllowAbsent="yes">
+      <ComponentRef Id="Component.appsettings.Development.json_3379814545" />
+      <ComponentRef Id="Component.appsettings.json_435570962" />
+      <ComponentRef Id="Component.listener.json_2284638231" />
+      <ComponentRef Id="Component.SMTPRouter.Abstractions.pdb_1936671129" />
+      <ComponentRef Id="Component.SMTPRouter.Abstractions.xml_2389744819" />
+      <ComponentRef Id="Component.SMTPRouter.Core.pdb_1891917842" />
+      <ComponentRef Id="Component.SMTPRouter.Core.xml_1962654508" />
+      <ComponentRef Id="Component.SMTPRouter.Listener.exe_3801441174" />
+      <ComponentRef Id="Component.SMTPRouter.Listener.pdb_1386893166" />
+    </Feature>
+
+    <Feature Id="Smtp20Message20Router" Title="Smtp Message Router" Level="1" Description="Smtp Message Router&#xA;&#xA;Process received messages and forward them to a different Smtp Server" AllowAbsent="yes">
+      <ComponentRef Id="Component.appsettings.Development.json_3779311049" />
+      <ComponentRef Id="Component.appsettings.json_2578718621" />
+      <ComponentRef Id="Component.sample.router.json_172292054" />
+      <ComponentRef Id="Component.SMTPRouter.Abstractions.pdb_3122571909" />
+      <ComponentRef Id="Component.SMTPRouter.Abstractions.xml_4285830067" />
+      <ComponentRef Id="Component.SMTPRouter.Core.pdb_3915124155" />
+      <ComponentRef Id="Component.SMTPRouter.Core.xml_3464195645" />
+      <ComponentRef Id="Component.SMTPRouter.Router.exe_859984048" />
+      <ComponentRef Id="Component.SMTPRouter.Router.pdb_1577603936" />
+    </Feature>
+
+    <Feature Id="Complete" Title="Complete" Level="1" AllowAbsent="yes">
+      <ComponentRef Id="Component.SMTPRouter.Listener.exe_3879363593" />
+    </Feature>
+
+    <InstallExecuteSequence>
+      <Custom Condition=" (1) " Action="WixSharp_InitRuntime_Action" Before="AppSearch" />
+      <Custom Action="Set_CancelRequestHandler_Props" Before="InstallFinalize" />
+      <Custom Condition=" (1) " Action="CancelRequestHandler" After="Set_CancelRequestHandler_Props" />
+      <Custom Condition="1" Action="WixSharp_Load_Action" Before="AppSearch" />
+      <Custom Condition="1" Action="WixSharp_BeforeInstall_Action" Before="InstallFiles" />
+      <Custom Action="Set_WixSharp_AfterInstall_Action_Props" After="InstallFiles" />
+      <Custom Condition="1" Action="WixSharp_AfterInstall_Action" After="Set_WixSharp_AfterInstall_Action_Props" />
+    </InstallExecuteSequence>
+  </Package>
+</Wix>
+

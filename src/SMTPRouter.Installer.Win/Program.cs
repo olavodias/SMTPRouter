@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Windows.Forms;
 using WixSharp;
+using WixSharp.Controls;
 using WixSharp.Forms;
 using IO = System.IO;
 
-namespace SMTPRouter.Win.Installer
+namespace SMTPRouter.Installer.Win
 {
     public class Program
     {
         static int Main()
         {
             try
-            {                
+            {
                 var buildConfiguration = "Release";
                 var buildPlatform = "net8.0-windows";
                 var buildArchitecture = "win-x64";
@@ -47,32 +48,19 @@ namespace SMTPRouter.Win.Installer
                 var project = new ManagedProject("SMTPRouter",
                                                  new InstallDir(@"%ProgramFiles%\SMTPRouter",
                                                                 new Dir(@"Bin\ListenerService",
-                                                                        new DirFiles(serviceListenerBinariesFeature, IO.Path.Combine(listenerBinariesPath,"*.*"))),
-                                                                new File(IO.Path.Combine(listenerBinariesPath, "SMTPRouter.Listener.exe"), 
-                                                                         new ServiceInstaller
-                                                                         {
-                                                                             Name = "SMTPRouter.Listener",
-                                                                             DisplayName = "SMTPRouter.Listener",
-                                                                             StartOn = null,
-                                                                             StopOn = SvcEvent.InstallUninstall_Wait,
-                                                                             RemoveOn = SvcEvent.Uninstall_Wait,
-                                                                             DelayedAutoStart = true,
-                                                                             Start = SvcStartType.auto,
-                                                                             ServiceSid = ServiceSid.none,
-                                                                             ProgramCommandLine = "SMTPRouter.Listener.exe",
-                                                                         }),
+                                                                        new DirFiles(serviceListenerBinariesFeature, IO.Path.Combine(listenerBinariesPath, "*.*"))),
                                                                 new Dir(@"Bin\RouterService",
-                                                                        new DirFiles(serviceRouterBinariesFeature, IO.Path.Combine(routerBinariesPath,"*.*")))
-                                                                //new Dir(@"Bin\Management",
-                                                                //        new DirFiles(managementBinariesFeature, routerBinariesPath)) // TODO: To be implemented
+                                                                        new DirFiles(serviceRouterBinariesFeature, IO.Path.Combine(routerBinariesPath, "*.*")))
+                                                               //new Dir(@"Bin\Management",
+                                                               //        new DirFiles(managementBinariesFeature, routerBinariesPath)) // TODO: To be implemented
                                                                )
                                                  );
-                
-                project.GUID = new Guid("71237eb0-8802-4f93-967a-440b1db089bb");
+
+                project.GUID = new Guid("c0a44886-4770-47b9-875b-a66b0ab155e3");
                 project.Version = Version.Parse(System.Reflection.Assembly.GetExecutingAssembly().GetVersion());
 
-                project.ManagedUI = ManagedUI.Empty;    //no standard UI dialogs
-                project.ManagedUI = ManagedUI.Default;  //all standard UI dialogs
+                //project.ManagedUI = ManagedUI.Empty;    //no standard UI dialogs
+                //project.ManagedUI = ManagedUI.Default;  //all standard UI dialogs
 
 
                 //custom set of standard UI dialogs
@@ -82,6 +70,7 @@ namespace SMTPRouter.Win.Installer
                                                 .Add(Dialogs.Licence)
                                                 //.Add(Dialogs.SetupType)
                                                 .Add(Dialogs.Features)
+                                                .Add<WixSharpSetup.ListenerSetupDialog>()
                                                 .Add(Dialogs.InstallDir)
                                                 .Add(Dialogs.Progress)
                                                 .Add(Dialogs.Exit);
@@ -95,7 +84,7 @@ namespace SMTPRouter.Win.Installer
                 project.BeforeInstall += Msi_BeforeInstall;
                 project.AfterInstall += Msi_AfterInstall;
 
-                project.OutDir = IO.Path.Combine(sourceDirectoryInfo.FullName, "SMTPRouter.Win.Installer", "msi", buildArchitecture);
+                project.OutDir = IO.Path.Combine(sourceDirectoryInfo.FullName, "SMTPRouter.Installer.Win", "bin", "msi", buildArchitecture);
 
 #if DEBUG
                 project.PreserveTempFiles = true;
