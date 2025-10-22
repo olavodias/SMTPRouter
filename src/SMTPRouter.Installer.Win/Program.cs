@@ -55,7 +55,7 @@ namespace SMTPRouter.Installer.Win
                                                                //        new DirFiles(managementBinariesFeature, routerBinariesPath)) // TODO: To be implemented
                                                                )
                                                  );
-
+                
                 project.GUID = new Guid("c0a44886-4770-47b9-875b-a66b0ab155e3");
                 project.Version = Version.Parse(System.Reflection.Assembly.GetExecutingAssembly().GetVersion());
 
