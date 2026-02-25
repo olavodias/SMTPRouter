@@ -19,6 +19,7 @@ public static class RuleFactory
 {
     private readonly static Dictionary<string, Type> _registeredTypes = new()
     {
+        { "OriginatedAtRoutingRule", typeof(OriginatedAtRoutingRule) },
         { "MailFromDomainRoutingRule", typeof(MailFromDomainRoutingRule) },
         { "MailFromRegexMatchRoutingRule", typeof(MailFromRegexMatchRoutingRule) },
         { "RelayRoutingRule", typeof(RelayRoutingRule) },
