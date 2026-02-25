@@ -95,7 +95,10 @@ public sealed class ConnectionProcessor: IProcessor
         // The Connection Processor consists in reading a message from the "InQueue" folder,
         // move it to the "Sending" folder, and attempt to send it.
 
-        // Create the Reusable SmtpClient
+        // If there are no active connections, do not do anything. Messages will not be routed.
+        if (_routingConnection.ConnectionInfo.ActiveConnections == 0) return;
+
+        // Create the tasks to send emails
         try
         {
             var activeTasks = new List<Task>();
@@ -105,14 +108,12 @@ public sealed class ConnectionProcessor: IProcessor
                 activeTasks.Add(EmailNextMessageAsync(stoppingToken));
 
             await Task.WhenAll(activeTasks).ConfigureAwait(false);
-
         }
         catch (Exception e)
         {
             // Log Exception
             _logger?.LogError(LoggingEvents.FileIOError, e, "General Error on the \"{class}.{method}\"", nameof(ConnectionProcessor), nameof(DoWorkAsync));
         }
-
     }
 
     // **********************************************************************

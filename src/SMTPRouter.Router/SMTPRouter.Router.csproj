@@ -10,7 +10,8 @@
 		<!-- Package Info -->
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<PackageId>SMTPRouter.Router</PackageId>
-		<Version>0.1.0</Version>
+		<!-- <Version>0.1.0</Version> -->
+		<Version>3.0.0-preview.3</Version> <!-- temporary -->
 		<Title>SMTP Router Routing Service</Title>
 		<Authors>Olavo Henrique Dias</Authors>
 		<Company>Olavo Henrique Dias</Company>
